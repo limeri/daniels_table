@@ -9,3 +9,4 @@ working_dir = os.path.dirname(abs_script_path)
 os.chdir(working_dir)
 
 df = pd.read_excel(SAMPLE_FILE)
+print(df['Giving Account Name'][2])
