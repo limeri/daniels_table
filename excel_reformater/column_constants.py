@@ -1,5 +1,5 @@
-# This file contains constants useful for the code.  Most of these constants are field names to ensure
-# they are never spelled incorrectly.
+# This file contains Excel column name constants.  These constants are field names to ensure they are never
+# spelled incorrectly.
 
 IGNORE_FIELD = '***** IGNORE THIS FIELD *****'
 

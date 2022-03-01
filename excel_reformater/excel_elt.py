@@ -1,6 +1,6 @@
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
-import constants as cc
+import column_constants as cc
 import os
 import pandas as pd
 
