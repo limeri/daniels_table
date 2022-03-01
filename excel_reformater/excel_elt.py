@@ -4,7 +4,7 @@ import constants as cc
 import os
 import pandas as pd
 
-SAMPLE_FILE = '2022fidelity.xlsx'
+SAMPLE_FILE = 'sample_files\\2022fidelity.xlsx'
 
 
 class ExcelFileReader:
