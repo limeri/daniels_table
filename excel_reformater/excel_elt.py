@@ -10,29 +10,6 @@ SAMPLE_FILE = 'sample_files\\2022fidelity.xlsx'
 class ExcelFileReader:
     NONE = 'None'
 
-    FIDELITY_MAP = {
-        cc.FID_ADDRESSEE_NAME: cc.LGL_FULL_NAME,
-        cc.FID_ACKNOWLEDGEMENT_ADDRESS_LINE_1: cc.LGL_ADDRESS_LINE_1,
-        cc.FID_ACKNOWLEDGEMENT_ADDRESS_LINE_2: cc.LGL_ADDRESS_LINE_2,
-        cc.FID_ACKNOWLEDGEMENT_ADDRESS_LINE_3: cc.LGL_ADDRESS_LINE_3,
-        cc.FID_ACKNOWLEDGEMENT_CITY: cc.LGL_CITY,
-        cc.FID_ACKNOWLEDGEMENT_COUNTRY: cc.LGL_COUNTRY,
-        cc.FID_ACKNOWLEDGEMENT_STATE: cc.LGL_STATE,
-        cc.FID_ACKNOWLEDGEMENT_ZIPCODE: cc.LGL_POSTAL_CODE,
-        cc.FID_GRANT_ID: cc.LGL_EXTERNAL_GIFT_ID,
-        cc.FID_EFFECTIVE_DATE: cc.LGL_GIFT_DATE,
-        cc.FID_GRANT_AMOUNT: cc.LGL_GIFT_AMOUNT,
-        cc.FID_SPECIAL_PURPOSE: cc.LGL_GIFT_NOTE,
-        # --- These fields are ignored --- #
-        cc.FID_RECOMMENDED_BY: cc.IGNORE_FIELD,
-        cc.FID_ACH_GROUP_ID: cc.IGNORE_FIELD,
-        cc.FID_FULL_ADDRESS: cc.IGNORE_FIELD,
-        cc.FID_GIVING_ACCOUNT_NAME: cc.IGNORE_FIELD,
-        cc.FID_PAYABLE_TO: cc.IGNORE_FIELD,
-        cc.FID_PRIMARY_NAME: cc.IGNORE_FIELD,
-        cc.FID_SECONDARY_NAME: cc.IGNORE_FIELD,
-    }
-
     # This method reads the data from an Excel spreadsheet and returns a datafile.  This
     # method requires the Pandas module to be installed.
     #
@@ -78,7 +55,6 @@ class ExcelFileReader:
                 print('Ignoring key "{}".'.format(input_key))
                 continue
             output_data[output_key] = input_data[input_key]
-#        return output_data
         output_df = pd.DataFrame(output_data)
         return output_df
 
@@ -100,10 +76,11 @@ def run_sample_test():
     # input_data = df.to_dict()
     # print('----- input dict conversion\n', input_data)
 
-    output = excell.map_fields(df, field_map=excell.FIDELITY_MAP)
+    output = excell.map_fields(df, field_map=cc.FIDELITY_MAP)
     print('----- output dict conversion\n', output.to_string())
     output_file = open('lgl.csv', 'w')
     output_file.write(output.to_csv(index=False, line_terminator='\n'))
+
 
 if __name__ == '__main__':
     run_sample_test()
