@@ -4,6 +4,8 @@ import column_constants as cc
 import os
 import pandas as pd
 
+import lgl_api
+
 SAMPLE_FILE = 'sample_files\\2022fidelity.xlsx'
 
 
@@ -21,6 +23,24 @@ class ExcelFileReader:
     def read_file(file_path):
         df = pd.read_excel(file_path)
         return df
+
+    # This method finds  the name field for the input_data set.
+    def get_donor_names(self, input_data):
+        if cc.FID_ADDRESSEE_NAME in input_data:
+            return input_data[cc.FID_ADDRESSEE_NAME]
+        else:
+            raise NameError('The data set does not contain a known constituent name field.')
+
+    # This method will get the LGL ID based on the name of the constituent.
+    def get_lgl_constituent_ids(self, input_data):
+        lgl = lgl_api.LglApi()
+        donor_names = self.get_donor_names(input_data=input_data)
+        lgl_ids = {}
+        for index in donor_names.keys():
+            name = donor_names[index]
+            cid = lgl.find_constituent_id_by_name(name)
+            lgl_ids[index] = cid
+        return lgl_ids
 
     # This method will map fields based on the dictionary map specified.
     # To do this bit of magic, the input data frame will be converted to a Python dict and a new Python dict with
@@ -55,6 +75,10 @@ class ExcelFileReader:
                 print('Ignoring key "{}".'.format(input_key))
                 continue
             output_data[output_key] = input_data[input_key]
+            if input_key.find('name') != -1:
+                constituent_name = input_data[input_key]
+        id_list = self.get_lgl_constituent_ids(input_data=input_data)
+        output_data[cc.LGL_CONSTITUENT_ID] = id_list
         output_df = pd.DataFrame(output_data)
         return output_df
 
