@@ -1,12 +1,16 @@
+# This class will read excel input files, retrieve info from them, and create a CSV file with the new format.
+#
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
 import column_constants as cc
+import logging
 import os
 import pandas as pd
 
 import lgl_api
 
 SAMPLE_FILE = 'sample_files\\2022fidelity.xlsx'
+log = logging.getLogger()
 
 
 class ExcelFileReader:
@@ -21,18 +25,35 @@ class ExcelFileReader:
     # Returns - a Pandas data frame containing the data
     @staticmethod
     def read_file(file_path):
+        log.debug('Entering read_file')
         df = pd.read_excel(file_path)
         return df
 
     # This method finds  the name field for the input_data set.
+    #
+    # Args:
+    #   input_data - the dict from the excel file data frame. The format of this dict is described in map_fields
+    #
+    # Returns - the dict with the donor names.  The format of the dict is:
+    #   {0: 'name one', 1: 'name two', ...}
+    #
+    # Raises - NameError - if the input_data does not contain a key with a known addressee key.
     def get_donor_names(self, input_data):
+        log.debug('Entering get_donor_names')
         if cc.FID_ADDRESSEE_NAME in input_data:
             return input_data[cc.FID_ADDRESSEE_NAME]
         else:
             raise NameError('The data set does not contain a known constituent name field.')
 
     # This method will get the LGL ID based on the name of the constituent.
+    #
+    # Args:
+    #   input_data - the dict from the excel file data frame. The format of this dict is described in map_fields
+    #
+    # Returns - a dict of LGL IDs.  The keys of the dict will match the names found by get_donor_names and will
+    #   be in the format: {0: id_1, 1: id_2, ...}
     def get_lgl_constituent_ids(self, input_data):
+        log.debug('Entering get_lgl_constituent_ids')
         lgl = lgl_api.LglApi()
         donor_names = self.get_donor_names(input_data=input_data)
         lgl_ids = {}
@@ -52,7 +73,7 @@ class ExcelFileReader:
     #
     # Some sample data:
     # {'Recommended By': {0: 'Online at FC', 1: 'Online at FC', 2: 'Online at FC'},
-    #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868},
+    #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868}, ...
     #
     # The goal is to modify the names of the outer keys.  In the sample data above, "Recommended By" is ignored
     # (it is not included in the final output) and "Grant Id" is changed to "External gift ID".  The inner dict
@@ -64,47 +85,52 @@ class ExcelFileReader:
     #
     # Returns - a Pandas data frame containing the converted data.
     def map_fields(self, input_df, field_map):
+        log.debug('Entering map_fields')
         input_data = input_df.to_dict()
         input_keys = input_data.keys()
         output_data = {}
         for input_key in input_keys:
             if input_key not in field_map.keys():
-                print('The key "{}" was not found.'.format(input_key))
+                print('The input key "{}" was not found in the field map.  It will be ignored.'.format(input_key))
+                continue
             output_key = field_map[input_key]
             if output_key == cc.IGNORE_FIELD:
-                print('Ignoring key "{}".'.format(input_key))
+                if cc.DEBUG:
+                    print('Ignoring key "{}".'.format(input_key))
                 continue
+            if cc.DEBUG:
+                print('The input key "{}" is being replaced by "{}"'.format(input_key, output_key))
             output_data[output_key] = input_data[input_key]
-            if input_key.find('name') != -1:
-                constituent_name = input_data[input_key]
         id_list = self.get_lgl_constituent_ids(input_data=input_data)
         output_data[cc.LGL_CONSTITUENT_ID] = id_list
         output_df = pd.DataFrame(output_data)
         return output_df
 
 
-def run_sample_test():
+# This is a test function for map_fields and to see what the data looks like.
+def run_map_fields_test():
     abs_script_path = os.path.abspath(__file__)
     working_dir = os.path.dirname(abs_script_path)
     os.chdir(working_dir)
     excell = ExcelFileReader()
     df = excell.read_file(file_path=SAMPLE_FILE)
-    print('-----')
-    print(df.to_string() + "\n\n")
-    print('-----\nAccount Name: ', df['Giving Account Name'].to_string())
-    print('-----\nAccount Name, Row 2: ', df['Giving Account Name'][2])
-    print('-----\nIterate over rows:')
-    for index, row in df.iterrows():
-        print(index, ": ", row.to_string())
-
+    # print('-----')
+    # print(df.to_string() + "\n\n")
+    # print('-----\nAccount Name: ', df['Giving Account Name'].to_string())
+    # print('-----\nAccount Name, Row 2: ', df['Giving Account Name'][2])
+    # print('-----\nIterate over rows:')
+    # for index, row in df.iterrows():
+    #     print(index, ": ", row.to_string())
     # input_data = df.to_dict()
     # print('----- input dict conversion\n', input_data)
 
     output = excell.map_fields(df, field_map=cc.FIDELITY_MAP)
-    print('----- output dict conversion\n', output.to_string())
+    # print('-----\noutput dict\n', output.to_string())
+    log.info('-----')
+    log.info('output dict:\n{}'.format(output.to_string()))
     output_file = open('lgl.csv', 'w')
     output_file.write(output.to_csv(index=False, line_terminator='\n'))
 
 
 if __name__ == '__main__':
-    run_sample_test()
+    run_map_fields_test()

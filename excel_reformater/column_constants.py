@@ -1,6 +1,8 @@
 # This file contains Excel column name constants.  These constants are field names to ensure they are never
 # spelled incorrectly.
 
+DEBUG = 0  # Turns on some useful printed statements if set to 1.  Set to 0 for production.
+
 IGNORE_FIELD = '***** IGNORE THIS FIELD *****'
 
 # LGL Fields
