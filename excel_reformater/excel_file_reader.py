@@ -25,7 +25,7 @@ class ExcelFileReader:
     # Returns - a Pandas data frame containing the data
     @staticmethod
     def read_file(file_path):
-        log.debug('Entering read_file')
+        log.debug('Entering')
         df = pd.read_excel(file_path)
         return df
 
@@ -39,7 +39,7 @@ class ExcelFileReader:
     #
     # Raises - NameError - if the input_data does not contain a key with a known addressee key.
     def get_donor_names(self, input_data):
-        log.debug('Entering get_donor_names')
+        log.debug('Entering')
         if cc.FID_ADDRESSEE_NAME in input_data:
             return input_data[cc.FID_ADDRESSEE_NAME]
         else:
@@ -53,7 +53,7 @@ class ExcelFileReader:
     # Returns - a dict of LGL IDs.  The keys of the dict will match the names found by get_donor_names and will
     #   be in the format: {0: id_1, 1: id_2, ...}
     def get_lgl_constituent_ids(self, input_data):
-        log.debug('Entering get_lgl_constituent_ids')
+        log.debug('Entering')
         lgl = lgl_api.LglApi()
         donor_names = self.get_donor_names(input_data=input_data)
         lgl_ids = {}
@@ -85,21 +85,19 @@ class ExcelFileReader:
     #
     # Returns - a Pandas data frame containing the converted data.
     def map_fields(self, input_df, field_map):
-        log.debug('Entering map_fields')
+        log.debug('Entering')
         input_data = input_df.to_dict()
         input_keys = input_data.keys()
         output_data = {}
         for input_key in input_keys:
             if input_key not in field_map.keys():
-                print('The input key "{}" was not found in the field map.  It will be ignored.'.format(input_key))
+                log.debug('The input key "{}" was not found in the field map.  It will be ignored.'.format(input_key))
                 continue
             output_key = field_map[input_key]
             if output_key == cc.IGNORE_FIELD:
-                if cc.DEBUG:
-                    print('Ignoring key "{}".'.format(input_key))
+                log.debug('Ignoring key "{}".'.format(input_key))
                 continue
-            if cc.DEBUG:
-                print('The input key "{}" is being replaced by "{}"'.format(input_key, output_key))
+            log.debug('The input key "{}" is being replaced by "{}"'.format(input_key, output_key))
             output_data[output_key] = input_data[input_key]
         id_list = self.get_lgl_constituent_ids(input_data=input_data)
         output_data[cc.LGL_CONSTITUENT_ID] = id_list
@@ -114,20 +112,8 @@ def run_map_fields_test():
     os.chdir(working_dir)
     excell = ExcelFileReader()
     df = excell.read_file(file_path=SAMPLE_FILE)
-    # print('-----')
-    # print(df.to_string() + "\n\n")
-    # print('-----\nAccount Name: ', df['Giving Account Name'].to_string())
-    # print('-----\nAccount Name, Row 2: ', df['Giving Account Name'][2])
-    # print('-----\nIterate over rows:')
-    # for index, row in df.iterrows():
-    #     print(index, ": ", row.to_string())
-    # input_data = df.to_dict()
-    # print('----- input dict conversion\n', input_data)
-
     output = excell.map_fields(df, field_map=cc.FIDELITY_MAP)
-    # print('-----\noutput dict\n', output.to_string())
-    log.info('-----')
-    log.info('output dict:\n{}'.format(output.to_string()))
+    print('output dict:\n{}'.format(output.to_string()))
     output_file = open('lgl.csv', 'w')
     output_file.write(output.to_csv(index=False, line_terminator='\n'))
 

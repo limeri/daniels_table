@@ -3,11 +3,13 @@
 # LGL Static API doc: https://api.littlegreenlight.com/api-docs/static.html
 # LGL Dynamic API doc: https://api.littlegreenlight.com/api-docs/
 
-from column_constants import DEBUG
+import logging
 import requests
 
 LGL_API_TOKEN = 'TRFuDlxvO7bqTmGMZUJuSeZbzAwgNHqi17hBio2w5CgWeLuwPtCsmk9WAFlxpolTZulduBbd4yT6LsigWP-k2g'
 URL_SEARCH_CONSTITUENT = 'https://api.littlegreenlight.com/api/v1/constituents/search'
+
+log = logging.getLogger()
 
 
 class LglApi:
@@ -19,10 +21,10 @@ class LglApi:
     #
     # Returns - a dict containing the name information from LGL
     def find_constituent_by_name(self, name):
+        log.debug('Entering')
         search_params = {'q': 'name=' + name, 'access_token': LGL_API_TOKEN}
         response = requests.get(url=URL_SEARCH_CONSTITUENT, params=search_params)
-        if DEBUG:
-            print('The response is: {}'.format(response.to_string()))
+        log.debug('The response is: {}'.format(response.json()))
         data = response.json()
         return data
 
@@ -33,15 +35,14 @@ class LglApi:
     #
     # Returns - the LGL constituent ID
     def find_constituent_id_by_name(self, name):
+        log.debug('Entering')
         data = self.find_constituent_by_name(name)
         if data['items']:
             cid = data['items'][0]['id']
-            if DEBUG:
-                print('The constituent ID is {}.'.format(cid))
+            log.debug('The constituent ID is {}.'.format(cid))
         else:
             cid = ""
-            if DEBUG:
-                print('The constituent "{}" was not found.'.format(name))
+            log.info('The constituent "{}" was not found.'.format(name))  # We want to notify the user about this.
         return cid
 
 
