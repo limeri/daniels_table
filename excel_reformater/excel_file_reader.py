@@ -14,8 +14,6 @@ log = logging.getLogger()
 
 
 class ExcelFileReader:
-    NONE = 'None'
-
     # This method reads the data from an Excel spreadsheet and returns a datafile.  This
     # method requires the Pandas module to be installed.
     #
@@ -29,7 +27,23 @@ class ExcelFileReader:
         df = pd.read_excel(file_path)
         return df
 
+    # This method will find which map (from column_constants.py) to use.
+    #
+    # #### IMPORTANT NOTE: Everytime a new map is added, this method must be updated.
+    #
+    # The method will see if the column names in input data match the keys for any of the maps in column_constants.
+    # If it doesn't, that file has a major formatting problem.  If it does, then we use that map to do the formatting.
+    def get_map(self, input_keys):
+        if set(input_keys) <= set(cc.FIDELITY_MAP.keys()):
+            return cc.FIDELITY_MAP
+        elif set(input_keys) <= set(cc.BENEVITY_MAP.keys()):
+            return cc.BENEVITY_MAP
+        log.error('The input keys "{}" did not match any maps.  This data cannot be processed!')
+        return ''
+
     # This method finds  the name field for the input_data set.
+    #
+    # #### IMPORTANT NOTE: Everytime a new map is added, this method must be updated.
     #
     # Args:
     #   input_data - the dict from the excel file data frame. The format of this dict is described in map_fields
@@ -42,6 +56,12 @@ class ExcelFileReader:
         log.debug('Entering')
         if cc.FID_ADDRESSEE_NAME in input_data:
             return input_data[cc.FID_ADDRESSEE_NAME]
+        if cc.BEN_DONOR_LAST_NAME in input_data:
+            # In this case, we want to create a new dict using "firstname lastname".
+            names = {}
+            for index in cc.BEN_DONOR_LAST_NAME.keys():
+                names[index] = input_data[cc.BEN_DONOR_FIRST_NAME[index]] + ' ' + input_data[cc.BEN_DONOR_LAST_NAME[index]]
+            return names
         else:
             raise NameError('The data set does not contain a known constituent name field.')
 
@@ -84,11 +104,12 @@ class ExcelFileReader:
     #   map = a dict mapping column headers from input_df to an output data frame
     #
     # Returns - a Pandas data frame containing the converted data.
-    def map_fields(self, input_df, field_map):
+    def map_fields(self, input_df):
         log.debug('Entering')
         input_data = input_df.to_dict()
         input_keys = input_data.keys()
         output_data = {}
+        field_map = self.get_map(input_keys=input_keys)
         for input_key in input_keys:
             if input_key not in field_map.keys():
                 log.debug('The input key "{}" was not found in the field map.  It will be ignored.'.format(input_key))
@@ -112,7 +133,7 @@ def run_map_fields_test():
     os.chdir(working_dir)
     excell = ExcelFileReader()
     df = excell.read_file(file_path=SAMPLE_FILE)
-    output = excell.map_fields(df, field_map=cc.FIDELITY_MAP)
+    output = excell.map_fields(input_df=df)
     print('output dict:\n{}'.format(output.to_string()))
     output_file = open('lgl.csv', 'w')
     output_file.write(output.to_csv(index=False, line_terminator='\n'))

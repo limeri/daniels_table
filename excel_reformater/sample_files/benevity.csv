@@ -1,0 +1,21 @@
+Donations Report,
+"#-------------------------------------------",
+Charity Name,DANIELS TABLE INC
+Charity ID,840-473166043
+Period Ending,Tue 1 Feb 2022 0:00:00
+Currency,USD
+Payment Method,EFT
+Disbursement ID,7JRZHA4X8B
+Note,Rounding may be applied to some values in this report. Learn more at https://causes.benevity.org/feedback-support
+"#-------------------------------------------",
+
+Company,Project,Donation Date,Donor First Name,Donor Last Name,Email,Address,City,State/Province,Postal Code,Activity,Comment,Transaction ID,Donation Frequency,Currency,Project Remote ID,Source,Reason,Total Donation to be Acknowledged,Match Amount,Cause Support Fee,Merchant Fee,Fee Comment
+Liberty Mutual,DANIELS TABLE INC,2022-01-25T19:48:48Z,Anissa,Giarla,Anissa.Giarla@LibertyMutual.com,Not shared by donor,Not shared by donor,Not shared by donor,02493,,Daniel's Table,37JLC5QMY5,Recurring,USD,,Payroll,User Donation,10.23,10.23,0.00,0.00,
+Liberty Mutual,DANIELS TABLE INC,2022-01-25T19:51:51Z,Melissa,Markovitz,MELISSA.MARKOVITZ@LibertyMutual.com,75 Sylvan St,Danvers,MA,01923,,Daniel's Table,37JN52ALK3,Recurring,USD,,Payroll,User Donation,19.00,19.00,0.00,0.00,
+Biogen,DANIELS TABLE INC,2022-01-27T15:44:44Z,Richard,Gibson,RTODD.GIBSON@BIOGEN.COM,Not shared by donor,Not shared by donor,Not shared by donor,02493,,,37PAL4GUQ1,Recurring,USD,,BlueSnap,User Donation,750.00,750.00,0.00,15.75,
+Liberty Mutual,DANIELS TABLE INC,2022-01-30T06:09:57Z,Anissa,Giarla,Anissa.Giarla@LibertyMutual.com,Not shared by donor,Not shared by donor,Not shared by donor,02493,,Daniel's Table,380JPGCC97,Recurring,USD,,Payroll,User Donation,10.23,10.23,0.00,0.00,
+Liberty Mutual,DANIELS TABLE INC,2022-01-30T06:12:53Z,Melissa,Markovitz,MELISSA.MARKOVITZ@LibertyMutual.com,75 Sylvan St,Danvers,MA,01923,,Daniel's Table,380MT5S7HB,Recurring,USD,,Payroll,User Donation,19.00,19.00,0.00,0.00,
+Totals,,,,,,,,,,,,,,,,,,808.46,808.46,0.00,15.75
+Total Donations (Gross),"1,616.92"
+Check Fee,0.00
+Net Total Payment,"1,601.17"
