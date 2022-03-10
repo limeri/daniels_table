@@ -7,7 +7,7 @@ import logging
 import sys
 from datetime import datetime
 
-import excel_file_reader
+import donor_file_reader
 
 log = logging.getLogger()  # The log object needs to be created here for use in this module.  The setup_logger
                            # function can configure it later.
@@ -81,9 +81,9 @@ def main(argv):
 
     file_access = 'w'  # Start by ensuring you create a new file.
     for input_file in input_files:
-        excell = excel_file_reader.ExcelFileReader()
-        df = excell.read_file(file_path=input_file)
-        output = excell.map_fields(input_df=df)
+        donor_reader = donor_file_reader.DonorFileReader()
+        df = donor_reader.read_file(file_path=input_file)
+        output = donor_reader.map_fields(input_df=df)
         output_file = open(output_file, file_access)
         output_file.write(output.to_csv(index=False, line_terminator='\n'))
         file_access = 'a'  # Change access to append after the first file.

@@ -22,7 +22,7 @@ LGL_GIFT_AMOUNT = 'Gift amount'
 LGL_GIFT_NOTE = 'Gift note'
 LGL_EXTERNAL_GIFT_ID = 'External gift ID'
 
-# Fidelity input fields
+# Fidelity Input Fields
 FID_ACH_GROUP_ID = "ACH Group Id"
 FID_ACKNOWLEDGEMENT_ADDRESS_LINE_1 = "Acknowledgement Address Line 1"
 FID_ACKNOWLEDGEMENT_ADDRESS_LINE_2 = "Acknowledgement Address Line 2"
@@ -43,29 +43,30 @@ FID_RECOMMENDED_BY = "Recommended By"
 FID_SECONDARY_NAME = "Secondary Name"
 FID_SPECIAL_PURPOSE = "Special Purpose"
 
+# Benevity Input Fields
 BEN_ACTIVITY = 'Activity'
-BEN_ADDRESS_CITY = 'Address City'
+BEN_ADDRESS = 'Address'
 BEN_CAUSE_SUPPORT_FEE = 'Cause Support Fee'
+BEN_CITY = 'City'
 BEN_COMMENT = 'Comment'
 BEN_COMPANY = 'Company'
 BEN_CURRENCY = 'Currency'
 BEN_DONATION_DATE = 'Donation Date'
-BEN_DONATION = 'Donation'
+BEN_DONATION_FREQUENCY = 'Donation Frequency'
 BEN_DONOR_FIRST_NAME = 'Donor First Name'
 BEN_DONOR_LAST_NAME = 'Donor Last Name'
 BEN_EMAIL = 'Email'
 BEN_FEE_COMMENT = 'Fee Comment'
-BEN_FREQUENCY = 'Frequency'
 BEN_MATCH_AMOUNT = 'Match Amount'
 BEN_MERCHANT_FEE = 'Merchant Fee'
 BEN_POSTAL_CODE = 'Postal Code'
-BEN_PROJECT_REMOTE_ID = 'Project Remote Id'
+BEN_PROJECT_REMOTE_ID = 'Project Remote ID'
 BEN_PROJECT = 'Project'
 BEN_REASON = 'Reason'
 BEN_SOURCE = 'Source'
 BEN_STATE = 'State/Province'
-BEN_TOTAL_DONATION_TO_BE_ACKNOWLEDGED = 'Total Donation To Be Acknowledged'
-BEN_TRANSACTION_ID = 'Transaction Id'
+BEN_TOTAL_DONATION_TO_BE_ACKNOWLEDGED = 'Total Donation to be Acknowledged'
+BEN_TRANSACTION_ID = 'Transaction ID'
 
 
 # ----- These are the maps for the input fields to the LGL fields ----- #
@@ -94,7 +95,8 @@ FIDELITY_MAP = {
 }
 
 BENEVITY_MAP = {
-    BEN_ADDRESS_CITY: LGL_CITY,
+    BEN_ADDRESS: LGL_ADDRESS_LINE_1,
+    BEN_CITY: LGL_CITY,
     BEN_COMMENT: LGL_GIFT_NOTE,
     BEN_COMPANY: LGL_COMPANY,
     BEN_DONATION_DATE: LGL_GIFT_DATE,
@@ -105,13 +107,12 @@ BENEVITY_MAP = {
     BEN_STATE: LGL_STATE,
     BEN_TOTAL_DONATION_TO_BE_ACKNOWLEDGED: LGL_GIFT_AMOUNT,
     BEN_TRANSACTION_ID: LGL_EXTERNAL_GIFT_ID,
-    # These fields are ignored
+    # --- These fields are ignored --- #
     BEN_ACTIVITY: IGNORE_FIELD,
     BEN_CAUSE_SUPPORT_FEE: IGNORE_FIELD,
     BEN_CURRENCY: IGNORE_FIELD,
-    BEN_DONATION: IGNORE_FIELD,
+    BEN_DONATION_FREQUENCY: IGNORE_FIELD,
     BEN_FEE_COMMENT: IGNORE_FIELD,
-    BEN_FREQUENCY: IGNORE_FIELD,
     BEN_MATCH_AMOUNT: IGNORE_FIELD,
     BEN_MERCHANT_FEE: IGNORE_FIELD,
     BEN_PROJECT_REMOTE_ID: IGNORE_FIELD,

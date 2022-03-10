@@ -7,17 +7,15 @@ import logging
 import os
 import pandas as pd
 
+import donor_file_reader
 import lgl_api
 
-SAMPLE_FILE = 'sample_files\\2022fidelity.xlsx'
+SAMPLE_FILE = 'sample_files\\benevity.csv'
 log = logging.getLogger()
 
 
-class DonorFileReader:
-    def __init__(self):
-        self.input_data = []
-
-    # This method reads the data from an Excel spreadsheet and returns a datafile.  This
+class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
+    # This method reads the data from a Fidelity Excel spreadsheet and returns a datafile.  This
     # method requires the Pandas module to be installed.
     #
     # Args:
@@ -29,20 +27,6 @@ class DonorFileReader:
         log.debug('Entering')
         df = pd.read_excel(file_path)
         return df
-
-    # This method will find which map (from column_constants.py) to use.
-    #
-    # #### IMPORTANT NOTE: Everytime a new map is added, this method must be updated.
-    #
-    # The method will see if the column names in input data match the keys for any of the maps in column_constants.
-    # If it doesn't, that file has a major formatting problem.  If it does, then we use that map to do the formatting.
-    def get_map(self, input_keys):
-        if set(input_keys) <= set(cc.FIDELITY_MAP.keys()):
-            return cc.FIDELITY_MAP
-        elif set(input_keys) <= set(cc.BENEVITY_MAP.keys()):
-            return cc.BENEVITY_MAP
-        log.error('The input keys "{}" did not match any maps.  This data cannot be processed!')
-        return ''
 
     # This method finds  the name field for the input_data set.
     #
@@ -112,12 +96,11 @@ class DonorFileReader:
         input_data = input_df.to_dict()
         input_keys = input_data.keys()
         output_data = {}
-        field_map = self.get_map(input_keys=input_keys)
         for input_key in input_keys:
-            if input_key not in field_map.keys():
+            if input_key not in cc.FIDELITY_MAP.keys():
                 log.debug('The input key "{}" was not found in the field map.  It will be ignored.'.format(input_key))
                 continue
-            output_key = field_map[input_key]
+            output_key = cc.FIDELITY_MAP[input_key]
             if output_key == cc.IGNORE_FIELD:
                 log.debug('Ignoring key "{}".'.format(input_key))
                 continue
@@ -134,9 +117,9 @@ def run_map_fields_test():
     abs_script_path = os.path.abspath(__file__)
     working_dir = os.path.dirname(abs_script_path)
     os.chdir(working_dir)
-    file_reader = DonorFileReader()
-    df = file_reader.read_file(file_path=SAMPLE_FILE)
-    output = file_reader.map_fields(input_df=df)
+    fidelity_reader = DonorFileReaderFidelity()
+    df = fidelity_reader.read_file(file_path=SAMPLE_FILE)
+    output = fidelity_reader.map_fields(input_df=df)
     print('output dict:\n{}'.format(output.to_string()))
     output_file = open('lgl.csv', 'w')
     output_file.write(output.to_csv(index=False, line_terminator='\n'))
