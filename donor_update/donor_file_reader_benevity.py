@@ -52,21 +52,6 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
 
     # ----- Code Starts -----
 
-    def __init__(self):
-        super().__init__()
-        self._input_data = []
-        self.donor_data = {}
-
-    @property
-    def input_data(self):
-        return self._input_data
-
-    @input_data.setter
-    def input_data(self, file_data):
-        self._input_data = file_data
-        if self.input_data:
-            self.initialize_donor_data()
-
     # The input_data setter method will separate the donation data from the input_data and store it in a dict called
     # self.donor_data.  The format of the dict will be:
     #
@@ -82,13 +67,13 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
             donor_rows.append(self.input_data[i])
             i += 1
         # Initialize the dict from labels (row 12 of the input_data).
-        dataKeys = self.input_data[11]
-        for key in dataKeys:
+        data_keys = self.input_data[11]
+        for key in data_keys:
             self.donor_data[key] = []
         # Add the donor rows to the data.
         for row in donor_rows:
-            for key in dataKeys:
-                index = dataKeys.index(key)
+            for key in data_keys:
+                index = data_keys.index(key)
                 self.donor_data[key].append(row[index])
 
     # This method will get the LGL IDs based on the name of the constituent.

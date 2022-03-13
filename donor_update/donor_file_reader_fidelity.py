@@ -26,7 +26,7 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
     def get_lgl_constituent_ids(self):
         log.debug('Entering')
         lgl = lgl_api.LglApi()
-        donor_names = self.input_data[cc.FID_ADDRESSEE_NAME]
+        donor_names = self.donor_data[cc.FID_ADDRESSEE_NAME]
         lgl_ids = {}
         for index in donor_names.keys():
             name = donor_names[index]
@@ -50,10 +50,10 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
     # (it is not included in the final output) and "Grant Id" is changed to "External gift ID".  The inner dict
     # (with keys 0, 1, ...) is unchanged.
     #
-    # Returns - a dict containing the converted data.  The format of the dict will be the same as the input_data.
+    # Returns - a dict containing the converted data.  The format of the dict will be the same as the donor_data.
     def map_fields(self):
         log.debug('Entering')
-        input_keys = self.input_data.keys()
+        input_keys = self.donor_data.keys()
         output_data = {}
         for input_key in input_keys:
             if input_key not in cc.FIDELITY_MAP.keys():
@@ -64,7 +64,7 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
                 log.debug('Ignoring key "{}".'.format(input_key))
                 continue
             log.debug('The input key "{}" is being replaced by "{}"'.format(input_key, output_key))
-            output_data[output_key] = self.input_data[input_key]
+            output_data[output_key] = self.donor_data[input_key]
         id_list = self.get_lgl_constituent_ids()
         output_data[cc.LGL_CONSTITUENT_ID] = id_list
         return output_data

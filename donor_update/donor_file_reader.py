@@ -14,8 +14,34 @@ log = logging.getLogger()
 
 
 class DonorFileReader:
+    # self.input_data contains the raw input from the file.  This will have the donation data, but may have other data
+    # that isn't wanted.  The donor_data variable is created to contain the donation data that will be processed.
+    #
+    # The format of donor_data is a dict in the form:
+    #   {column_name_1 {0: <row data>, 1: <row data>, ...}, column_name_2 ...}
+    #
+    # Some sample data:
+    # {'Recommended By': {0: 'Online at FC', 1: 'Online at FC', 2: 'Online at FC'},
+    #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868}, ...
+
+    # ---------- Start code ---------- #
+
     def __init__(self):
-        self.input_data = []
+        self._input_data = {}
+        self.donor_data = {}
+
+    @property
+    def input_data(self):
+        return self._input_data
+
+    @input_data.setter
+    def input_data(self, file_data):
+        self._input_data = file_data
+        if self.input_data:
+            self.initialize_donor_data()
+
+    def initialize_donor_data(self):
+        self.donor_data = self.input_data
 
     # This method reads the data from an Excel spreadsheet and returns a datafile.  This
     # method requires the Pandas module to be installed.
