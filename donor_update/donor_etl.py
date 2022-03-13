@@ -7,6 +7,7 @@ import logging
 import sys
 from datetime import datetime
 
+import donor_file_reader_factory
 import donor_file_reader
 
 log = logging.getLogger()  # The log object needs to be created here for use in this module.  The setup_logger
@@ -31,7 +32,7 @@ def setup_logger():
     file_handler.setLevel(logging.DEBUG)
     log.addHandler(file_handler)
     # Create a console handler with a higher log level
-    console_formatter = logging.Formatter('%(module)s - %(message)s')
+    console_formatter = logging.Formatter('%(module)s.%(funcName)s - %(message)s')
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
     console_handler.setLevel(logging.INFO)
@@ -50,7 +51,7 @@ def usage():
 # Run a test to ensure everything is working.
 def run_map_fields_test():
     print('Running the map_fields_test from the main module.')
-    excel_file_reader.run_map_fields_test()
+    donor_file_reader.run_map_fields_test()
 
 
 # Get the input files and output file (if there is one) from the command line and translate the data.
@@ -81,11 +82,18 @@ def main(argv):
 
     file_access = 'w'  # Start by ensuring you create a new file.
     for input_file in input_files:
-        donor_reader = donor_file_reader.DonorFileReader()
-        df = donor_reader.read_file(file_path=input_file)
-        output = donor_reader.map_fields(input_df=df)
-        output_file = open(output_file, file_access)
-        output_file.write(output.to_csv(index=False, line_terminator='\n'))
+        fidelity_reader = donor_file_reader_factory.get_file_reader(file_path=SAMPLE_FILE)
+        output = fidelity_reader.map_fields()
+        # Write the CSV file.  Easiest way is to convert to a Pandas data frame.
+        import pandas
+        output_df = pandas.DataFrame(output)
+        output_file = open('lgl.csv', file_access)
+        output_file.write(output_df.to_csv(index=False, line_terminator='\n'))
+        # donor_reader = donor_file_reader.DonorFileReader()
+        # df = donor_reader.read_file(file_path=input_file)
+        # output = donor_reader.map_fields(input_df=df)
+        # output_file = open(output_file, file_access)
+        # output_file.write(output.to_csv(index=False, line_terminator='\n'))
         file_access = 'a'  # Change access to append after the first file.
 
 

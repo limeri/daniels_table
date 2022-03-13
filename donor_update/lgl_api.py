@@ -21,11 +21,12 @@ class LglApi:
     #
     # Returns - a dict containing the name information from LGL
     def find_constituent_by_name(self, name):
-        log.debug('Entering')
+        log.debug('Entering with name: "{}"'.format(name))
         search_params = {'q': 'name=' + name, 'access_token': LGL_API_TOKEN}
+        log.debug('The search parameters are: "{}".'.format(search_params))
         response = requests.get(url=URL_SEARCH_CONSTITUENT, params=search_params)
-        log.debug('The response is: {}'.format(response.json()))
         data = response.json()
+        log.debug('The json response is: {}'.format(data))
         return data
 
     # This method will find the ID of a constituent based on the name.
@@ -35,7 +36,7 @@ class LglApi:
     #
     # Returns - the LGL constituent ID
     def find_constituent_id_by_name(self, name):
-        log.debug('Entering')
+        log.debug('Entering for "{}"'.format(name))
         data = self.find_constituent_by_name(name)
         if data['items']:
             cid = data['items'][0]['id']

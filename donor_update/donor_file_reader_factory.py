@@ -1,6 +1,9 @@
 # This file is a simple factory to find the correct donor_file_reader to read the donor file.  Each source of
 # donor information (Fidelity, Benevity, etc) have very different formats, so each needs it's own class.  So a factory
 # pattern is being used to manage this complexity simply.
+#
+# This module uses the pandas module to read Excel files.  More can be found about pandas at the URL below.
+# https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
 import logging
 import sys
@@ -128,5 +131,11 @@ def test_get_file_reader_benevity():
 
 
 if __name__ == '__main__':
+    console_formatter = logging.Formatter('%(module)s.%(funcName)s - %(message)s')
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(console_formatter)
+    log.addHandler(console_handler)
+    log.setLevel(logging.DEBUG)
+
     test_get_file_reader_fidelity()
     test_get_file_reader_benevity()

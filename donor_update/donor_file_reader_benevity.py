@@ -15,54 +15,89 @@ log = logging.getLogger()
 
 
 class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
-    # This method reads the data from a Fidelity Excel spreadsheet and returns a datafile.  This
-    # method requires the Pandas module to be installed.
+    # self.input_data is declared by the __init__ module of donor_file_reader.  In this module, it will be a list
+    # similar to the sample below:
     #
-    # Args:
-    #   file_path = path to the Excel file being read
+    # [['Donations Report', ''],
+    #  ['#-------------------------------------------', ''],
+    #  ['Charity Name', 'DANIELS TABLE INC'],
+    #  ['Charity ID', '1234-56789'],
+    #  ['Period Ending', 'Tue 1 Feb 2022 0:00:00'],
+    #  ['Currency', 'USD'],
+    #  ['Payment Method', 'EFT'],
+    #  ['Disbursement ID', '1ZZZZZ11111Z1'],
+    #  ['Note',
+    #   'Rounding may be applied to some values in this report. Learn more at https://causes.benevity.org/feedback-support'],
+    #  ['#-------------------------------------------', ''],
+    #  [],
+    #  ['Company', 'Project', 'Donation Date', 'Donor First Name', 'Donor Last Name', 'Email', 'Address', 'City',
+    #   'State/Province', 'Postal Code', 'Activity', 'Comment', 'Transaction ID', 'Donation Frequency', 'Currency',
+    #   'Project Remote ID', 'Source', 'Reason', 'Total Donation to be Acknowledged', 'Match Amount', 'Cause Support Fee',
+    #   'Merchant Fee', 'Fee Comment'],
+    #  ['Some Company', 'DANIELS TABLE INC', '2022-01-25T19:48:48Z', 'LastName1', 'FirstName1', 'email1@domain.com',
+    #   'Not shared by donor', 'Not shared by donor', 'Not shared by donor', '12345', '', "Daniel's Table", '123456AAAAA',
+    #   'Recurring', 'USD', '', 'Payroll', 'User Donation', '102', '51', '0.00', '0.00', ''],
+    #  ...
+    #  [
+    #      'Some Other Company', 'DANIELS TABLE INC', '2022-01-30T06:12:53Z', 'LastName2', 'FirstName2', 'email2@domain.com', '1 My St', 'MyCity', 'MA', '12345', '', "Daniel's Table", '123456BBBBB', 'Recurring', 'USD', '', 'Payroll', 'User Donation', '104.00', '52.00', '0.00', '5.00', ''],
+    #  ['Totals', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '206', '103', '0.00',
+    #   '5.00'],
+    #  ['Total Donations (Gross)', '309'],
+    #  ['Check Fee', '0.00'],
+    #  ['Net Total Payment', '304']]
     #
-    # Returns - a Pandas data frame containing the data
-    @staticmethod
-    def read_file(file_path):
-        log.debug('Entering')
-        df = pd.read_excel(file_path)
-        return df
+    # Note that the data we're interested in starts at line 13 and continues until the line starting with "Totals".
+    # We will need to isolate those lines as our actual data.
+    #
 
-    # This method finds  the name field for the input_data set.
-    #
-    # #### IMPORTANT NOTE: Everytime a new map is added, this method must be updated.
-    #
-    # Args:
-    #   input_data - the dict from the excel file data frame. The format of this dict is described in map_fields
-    #
-    # Returns - the dict with the donor names.  The format of the dict is:
-    #   {0: 'name one', 1: 'name two', ...}
-    #
-    # Raises - NameError - if the input_data does not contain a key with a known addressee key.
-    def get_donor_names(self, input_data):
-        log.debug('Entering')
-        if cc.FID_ADDRESSEE_NAME in input_data:
-            return input_data[cc.FID_ADDRESSEE_NAME]
-        if cc.BEN_DONOR_LAST_NAME in input_data:
-            # In this case, we want to create a new dict using "firstname lastname".
-            names = {}
-            for index in cc.BEN_DONOR_LAST_NAME.keys():
-                names[index] = input_data[cc.BEN_DONOR_FIRST_NAME[index]] + ' ' + input_data[cc.BEN_DONOR_LAST_NAME[index]]
-            return names
-        else:
-            raise NameError('The data set does not contain a known constituent name field.')
+    # ----- Code Starts -----
 
-    # This method will get the LGL ID based on the name of the constituent.
+    def __init__(self):
+        super().__init__()
+        self._input_data = []
+        self.donor_data = {}
+
+    @property
+    def input_data(self):
+        return self._input_data
+
+    @input_data.setter
+    def input_data(self, file_data):
+        self._input_data = file_data
+        if self.input_data:
+            self.initialize_donor_data()
+
+    # The input_data setter method will separate the donation data from the input_data and store it in a dict called
+    # self.donor_data.  The format of the dict will be:
     #
-    # Args:
-    #   input_data - the dict from the excel file data frame. The format of this dict is described in map_fields
+    # {'column_name': [<data row 1>, <data row 2>, etc], 'column name', ...}
     #
-    # Returns - a dict of LGL IDs.  The keys of the dict will match the names found by get_donor_names and will
-    #   be in the format: {0: id_1, 1: id_2, ...}
-    def get_lgl_constituent_ids(self, input_data):
+    # For example (from sample data above):
+    #   {'Company': ['Some Company',...,'Some Other Company'], 'Project': [...],...}
+    def initialize_donor_data(self):
+        # Separate the donor data from everything else (include the labels).
+        donor_rows = []
+        i = 12  # Start at line 13 (exclude the labels)
+        while self.input_data[i][0] != 'Totals':
+            donor_rows.append(self.input_data[i])
+            i += 1
+        # Initialize the dict from labels (row 12 of the input_data).
+        dataKeys = self.input_data[11]
+        for key in dataKeys:
+            self.donor_data[key] = []
+        # Add the donor rows to the data.
+        for row in donor_rows:
+            for key in dataKeys:
+                index = dataKeys.index(key)
+                self.donor_data[key].append(row[index])
+
+    # This method will get the LGL IDs based on the name of the constituent.
+    #
+    # Returns - a dict of LGL IDs.  The keys of the dict will be in the format: {0: id_1, 1: id_2, ...}
+    def get_lgl_constituent_ids(self):
         log.debug('Entering')
         lgl = lgl_api.LglApi()
-        donor_names = self.get_donor_names(input_data=input_data)
+        donor_names = self.input_data[cc.FID_ADDRESSEE_NAME]
         lgl_ids = {}
         for index in donor_names.keys():
             name = donor_names[index]
@@ -86,15 +121,10 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
     # (it is not included in the final output) and "Grant Id" is changed to "External gift ID".  The inner dict
     # (with keys 0, 1, ...) is unchanged.
     #
-    # Args:
-    #   input_df = a Pandas data frame from an Excel or CSV file
-    #   map = a dict mapping column headers from input_df to an output data frame
-    #
-    # Returns - a Pandas data frame containing the converted data.
-    def map_fields(self, input_df):
+    # Returns - a dict containing the converted data.  The format of the dict will be the same as the input_data.
+    def map_fields(self):
         log.debug('Entering')
-        input_data = input_df.to_dict()
-        input_keys = input_data.keys()
+        input_keys = self.input_data.keys()
         output_data = {}
         for input_key in input_keys:
             if input_key not in cc.FIDELITY_MAP.keys():
@@ -105,24 +135,27 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
                 log.debug('Ignoring key "{}".'.format(input_key))
                 continue
             log.debug('The input key "{}" is being replaced by "{}"'.format(input_key, output_key))
-            output_data[output_key] = input_data[input_key]
-        id_list = self.get_lgl_constituent_ids(input_data=input_data)
+            output_data[output_key] = self.input_data[input_key]
+        id_list = self.get_lgl_constituent_ids()
         output_data[cc.LGL_CONSTITUENT_ID] = id_list
-        output_df = pd.DataFrame(output_data)
-        return output_df
+        return output_data
+
+    # This is a test function for map_fields and to see what the data looks like.
 
 
-# This is a test function for map_fields and to see what the data looks like.
 def run_map_fields_test():
     abs_script_path = os.path.abspath(__file__)
     working_dir = os.path.dirname(abs_script_path)
     os.chdir(working_dir)
-    fidelity_reader = DonorFileReaderFidelity()
-    df = fidelity_reader.read_file(file_path=SAMPLE_FILE)
-    output = fidelity_reader.map_fields(input_df=df)
-    print('output dict:\n{}'.format(output.to_string()))
+    import donor_file_reader_factory
+    fidelity_reader = donor_file_reader_factory.get_file_reader(file_path=SAMPLE_FILE)
+    output = fidelity_reader.map_fields()
+    # Write the CSV file.  Easiest way is to convert to a Pandas data frame.
+    import pandas
+    output_df = pandas.DataFrame(output)
+    print('output dict:\n{}'.format(output_df.to_string()))
     output_file = open('lgl.csv', 'w')
-    output_file.write(output.to_csv(index=False, line_terminator='\n'))
+    output_file.write(output_df.to_csv(index=False, line_terminator='\n'))
 
 
 if __name__ == '__main__':
