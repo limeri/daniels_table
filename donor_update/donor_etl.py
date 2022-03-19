@@ -5,13 +5,18 @@
 import getopt
 import logging
 import sys
+import pandas
 from datetime import datetime
 
+import column_constants as cc
 import donor_file_reader_factory
-import donor_file_reader
 
-log = logging.getLogger()  # The log object needs to be created here for use in this module.  The setup_logger
-                           # function can configure it later.
+SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
+SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
+SAMPLE_FILE = SAMPLE_FILE_BENEVITY
+
+# The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
+log = logging.getLogger()
 
 
 # This function sets up the logging for the program.  It creates a file and console log.  The console log will
@@ -48,19 +53,14 @@ def usage():
     print('If -o is not specified, the output file will be "lgl.csv".')
 
 
-# Run a test to ensure everything is working.
-def run_map_fields_test():
-    print('Running the map_fields_test from the main module.')
-    donor_file_reader.run_map_fields_test()
-
-
 # Get the input files and output file (if there is one) from the command line and translate the data.
 def main(argv):
     input_files = []
     output_file = ''
+    # noinspection PyBroadException
     try:
         opts, args = getopt.getopt(argv, 'hi:o:,', ['input_file=', 'output_file='])
-    except:
+    except Exception as e:
         usage()
         sys.exit(2)
 
@@ -77,33 +77,96 @@ def main(argv):
     if not output_file:
         output_file = 'lgl.csv'
 
-    log.info('The input files are "{}".'.format(input_files))
+    log.debug('The input files are "{}".'.format(input_files))
     log.info('The output file is "{}".'.format(output_file))
+    reformat_data(input_files=input_files, output_file=output_file)
 
-    file_access = 'w'  # Start by ensuring you create a new file.
+
+# This function manages the reformatting process for the data.  It does this by looping through each input file,
+# getting the right DonorFileReader, mapping that file's data, merging it all into the final result, and writing
+# all the data to a CSV file.
+#
+# Returns - none
+# Side Effects - The output file is created and populated.
+def reformat_data(input_files, output_file):
+    final_output = {}
     for input_file in input_files:
-        fidelity_reader = donor_file_reader_factory.get_file_reader(file_path=SAMPLE_FILE)
-        output = fidelity_reader.map_fields()
-        # Write the CSV file.  Easiest way is to convert to a Pandas data frame.
-        import pandas
-        output_df = pandas.DataFrame(output)
-        output_file = open('lgl.csv', file_access)
-        output_file.write(output_df.to_csv(index=False, line_terminator='\n'))
-        # donor_reader = donor_file_reader.DonorFileReader()
-        # df = donor_reader.read_file(file_path=input_file)
-        # output = donor_reader.map_fields(input_df=df)
-        # output_file = open(output_file, file_access)
-        # output_file.write(output.to_csv(index=False, line_terminator='\n'))
-        file_access = 'a'  # Change access to append after the first file.
+        try:
+            fidelity_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
+        except ValueError:
+            log.info('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.format(input_file))
+        try:
+            output = fidelity_reader.map_fields()
+        except NameError:
+            log.info('No field containing a donor name was found in the file, "{}", so it is not possible to look "'
+                     'up LGL IDs.  This may not be a valid input file.'.format(input_file))
+        final_output = append_data(input_data=output, current_data=final_output)
+
+    # Make sure all the Gift Dates are Pandas Timestamps.
+    for data_key in final_output[cc.LGL_GIFT_DATE]:
+        if type(final_output[cc.LGL_GIFT_DATE][data_key]) != pandas.Timestamp:
+            final_output[cc.LGL_GIFT_DATE][data_key] = pandas.Timestamp(final_output[cc.LGL_GIFT_DATE][data_key])
+    # Write the CSV file.  Easiest way is to convert the output to a Pandas data frame.
+    output_df = pandas.DataFrame(final_output)
+    output_file = open(output_file, 'w')
+    output_file.write(output_df.to_csv(index=False, line_terminator='\n'))
+
+
+# This function will append the data from the last file read to the existing output data.  Both the input and current
+# data will be dicts with the same format:
+#
+#   {'label1': {0: 'l1value0', 1: 'l1value1', ...},
+#    'label2': {0: 'l2value0', 1: 'l2value1', ...},
+#    ...}
+#
+# Note that the number of items in the inner dict for each label will be the same -- if label1's inner dict has
+# 10 values, all labels' inner dicts will have 10 values.
+#
+# The goal here is that all of the labels will be included.  If the label is the same in both the input and current
+# data, then the input data will be appended to the end of the current data.  If the input label is not in the
+# current data, then empty values will be added for the current data and the input data will be appended under them.
+#
+# Args:
+#   input_data - the data from the last file read
+#   current_data - the merged data from prior files
+#
+# Returns:
+#   a dict with all the input data correctly appended.  The format will be the same as described above.
+def append_data(input_data, current_data):
+    final_data = current_data
+    if not current_data:
+        return input_data  # Return the input data if this is the first time.
+
+    # Append the data from the input_data to the final_data.  For each new label in input_data, populate the
+    # existing inner dicts with empty values.
+    first_current_label = next(iter(current_data))  # Get the first label from current_data
+    value_count = len(current_data[first_current_label].keys())
+    current_labels = current_data.keys()
+    input_labels = input_data.keys()
+    for input_label in input_labels:
+        if input_label not in current_labels:
+            # Got a new label, so populate existing rows with blanks.
+            final_data[input_label] = {}
+            for index in range(value_count):
+                final_data[input_label][index] = ''
+        # Append the input_data to final_data.  Remember that we're extending the inner dict, not a list.
+        new_index = value_count
+        input_data_keys = input_data[input_label]
+        for input_data_key in input_data_keys:
+            final_data[input_label][new_index] = input_data[input_label][input_data_key]
+            new_index += 1
+    return final_data
 
 
 if __name__ == '__main__':
     setup_logger()
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
-        run_map_fields_test()
-        sys.exit(0)
+        sys.argv.append('-i')
+        sys.argv.append(SAMPLE_FILE_FIDELITY)
+        sys.argv.append('-i')
+        sys.argv.append(SAMPLE_FILE_BENEVITY)
 
     # If there are args, we expect a list of excel files.
-    print("There are {} args.".format(len(sys.argv)))
+    log.debug("There are {} args.".format(len(sys.argv)))
     main(sys.argv[1:])

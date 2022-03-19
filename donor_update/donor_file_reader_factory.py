@@ -28,8 +28,7 @@ log = logging.getLogger()
 #
 # Returns - a dict containing the data from the file
 def read_file(file_path):
-    log.debug('Entering')
-    data = {}
+    log.debug('Entering with "{}"'.format(file_path))
     if file_path.endswith("xlsx") or file_path.endswith("xls"):
         df = pandas.read_excel(file_path)
         data = df.to_dict()
@@ -40,8 +39,7 @@ def read_file(file_path):
             for row in csv_reader:
                 data.append(row)
     else:
-        log.error('The file "{}" could not be read.'.format(file_path))
-        sys.exit(2)
+        raise ValueError('The file "{}" could not be read.'.format(file_path))
     return data
 
 
@@ -55,8 +53,11 @@ def read_file(file_path):
 #
 # The method will see if the column names in input data match the keys for any of the maps in column_constants.
 # If it doesn't, that file has a major formatting problem.  If it does, then we use that map to do the formatting.
+#
+# Returns: a DonorFileReader object
+# Side Effects: the input_data and donor_data properties in the DonorFileReader object are populated
 def get_file_reader(file_path):
-    log.info('Reading file, "{}".'.format(file_path))
+    log.debug('Reading file, "{}".'.format(file_path))
     file_reader = ''
     input_data = read_file(file_path=file_path)
     # If the input file was an Excel file, the return data will be in a dict.
