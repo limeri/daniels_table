@@ -92,11 +92,11 @@ def reformat_data(input_files, output_file):
     final_output = {}
     for input_file in input_files:
         try:
-            fidelity_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
+            donor_file_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
         except ValueError:
             log.info('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.format(input_file))
         try:
-            output = fidelity_reader.map_fields()
+            output = donor_file_reader.map_fields()
         except NameError:
             log.info('No field containing a donor name was found in the file, "{}", so it is not possible to look "'
                      'up LGL IDs.  This may not be a valid input file.'.format(input_file))

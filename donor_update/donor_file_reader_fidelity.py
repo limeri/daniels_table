@@ -2,7 +2,6 @@
 
 import column_constants as cc
 import logging
-import os
 
 import donor_file_reader
 import lgl_api
@@ -19,6 +18,10 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
     # Some sample data:
     # {'Recommended By': {0: 'Online at FC', 1: 'Online at FC', 2: 'Online at FC'},
     #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868}, ...
+
+    # Return the map to be used by map_keys.
+    def get_map(self, input_keys):
+        return cc.FIDELITY_MAP
 
     # This method will get the LGL IDs based on the name of the constituent.
     #
