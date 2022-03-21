@@ -29,10 +29,11 @@ log = logging.getLogger()
 # Returns - a dict containing the data from the file
 def read_file(file_path):
     log.debug('Entering with "{}"'.format(file_path))
-    if file_path.endswith("xlsx") or file_path.endswith("xls"):
+    file_path_lower = file_path.lower()
+    if file_path_lower.endswith("xlsx") or file_path_lower.endswith("xls"):
         df = pandas.read_excel(file_path)
         data = df.to_dict()
-    elif file_path.endswith("csv"):
+    elif file_path_lower.endswith("csv"):
         data = []
         with open(file_path, newline='') as csvfile:
             csv_reader = csv.reader(csvfile)
@@ -77,12 +78,12 @@ def get_file_reader(file_path):
         error_msg += 'Please save this file for evaluation and contact the developer.'
         error_msg += '\n\nYou can continue to use this program with other files.'
         log.error(error_msg)
-        sys.exit(1)
 
     if file_reader:
         file_reader.input_data = input_data
     else:
-        log.error('The input keys "{}" did not match any maps.  This data cannot be processed!')
+        log.error('The input keys "{}" for file "{}" did not match any maps.  This data cannot be processed!'.format(
+            input_keys, file_path))
 
     return file_reader
 

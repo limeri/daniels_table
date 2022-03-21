@@ -104,9 +104,11 @@ def reformat_data(input_files, output_file):
 
     # Make sure all the Gift Dates are Pandas Timestamps.
     for data_key in final_output[cc.LGL_GIFT_DATE]:
-        if type(final_output[cc.LGL_GIFT_DATE][data_key]) != pandas.Timestamp:
+        gift_date = final_output[cc.LGL_GIFT_DATE][data_key]  # Just making the IF more readable
+        if gift_date and type(gift_date) != pandas.Timestamp:
             final_output[cc.LGL_GIFT_DATE][data_key] = pandas.Timestamp(final_output[cc.LGL_GIFT_DATE][data_key])
-    # Write the CSV file.  Easiest way is to convert the output to a Pandas data frame.
+    # Write the CSV file.  Laziest way is to convert the output to a Pandas data frame especially since the dict
+    # format is based on the pandas data frame object.
     output_df = pandas.DataFrame(final_output)
     output_file = open(output_file, 'w')
     output_file.write(output_df.to_csv(index=False, line_terminator='\n'))
