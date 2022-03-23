@@ -14,6 +14,7 @@ import csv
 import column_constants as cc
 import donor_file_reader_benevity as benevity_reader
 import donor_file_reader_fidelity as fidelity_reader
+import donor_file_reader_stripe as stripe_reader
 
 log = logging.getLogger()
 
@@ -69,6 +70,8 @@ def get_file_reader(file_path):
         input_keys = input_data.keys()
         if set(input_keys) <= set(cc.FIDELITY_MAP.keys()):
             file_reader = fidelity_reader.DonorFileReaderFidelity()
+        elif set(input_keys) <= set(cc.STRIPE_MAP.keys()):
+            file_reader = stripe_reader.DonorFileReaderStripe()
     elif type(input_data) == list:
         input_keys = input_data[11]  # For Benevity, the column names are on line 12.  Compare them to the Benevity map.
         if set(input_keys) <= set(cc.BENEVITY_MAP.keys()):
@@ -132,6 +135,15 @@ def test_get_file_reader_benevity():
         print('FAIL - The wrong item was returned: "{}"'.format(file_reader))
 
 
+# Test getting the Stripe file reader class successfully.
+def test_get_file_reader_stripe():
+    file_reader = get_file_reader(file_path='sample_files\\stripe.xlsx')
+    if type(file_reader) == stripe_reader.DonorFileReaderStripe:
+        print('PASS - The Stripe File Reader was returned.')
+    else:
+        print('FAIL - The wrong item was returned: "{}"'.format(file_reader))
+
+
 if __name__ == '__main__':
     console_formatter = logging.Formatter('%(module)s.%(funcName)s - %(message)s')
     console_handler = logging.StreamHandler()
@@ -141,3 +153,4 @@ if __name__ == '__main__':
 
     test_get_file_reader_fidelity()
     test_get_file_reader_benevity()
+    test_get_file_reader_stripe()

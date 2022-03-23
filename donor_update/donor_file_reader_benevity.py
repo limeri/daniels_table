@@ -80,6 +80,7 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
     # Returns - none
     # Side Effect - the self.data_donor property is populated.
     def initialize_donor_data(self):
+        log.debug('Entering')
         # Separate the donor data from everything else (exclude the labels).
         donor_rows = []
         i = 12  # Start at line 13 (exclude the labels)
