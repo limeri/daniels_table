@@ -22,7 +22,8 @@ class DonorFileReader:
     #
     # Some sample data:
     # {'Recommended By': {0: 'Online at FC', 1: 'Online at FC', 2: 'Online at FC'},
-    #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868}, ...
+    #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868},
+    #  'Grant Amount': {0: 10, 1: 20, 2: 30, }, ...
 
     # ---------- Start code ---------- #
 

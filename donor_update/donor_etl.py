@@ -13,6 +13,7 @@ import donor_file_reader_factory
 
 SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
 SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
+SAMPLE_FILE_STRIPE = 'sample_files\\stripe.xlsx'
 SAMPLE_FILE = SAMPLE_FILE_BENEVITY
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
@@ -168,6 +169,8 @@ if __name__ == '__main__':
         sys.argv.append(SAMPLE_FILE_FIDELITY)
         sys.argv.append('-i')
         sys.argv.append(SAMPLE_FILE_BENEVITY)
+        sys.argv.append('-i')
+        sys.argv.append(SAMPLE_FILE_STRIPE)
 
     # If there are args, we expect a list of excel files.
     log.debug("There are {} args.".format(len(sys.argv)))

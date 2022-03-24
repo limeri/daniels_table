@@ -22,6 +22,8 @@ LGL_GIFT_AMOUNT = 'Gift amount'
 LGL_GIFT_NOTE = 'Gift note'
 LGL_EXTERNAL_GIFT_ID = 'External gift ID'
 LGL_CAMPAIGN_NAME = 'Campaign name'
+LGL_PAYMENT_TYPE = 'Payment type'
+LGL_ACKNOWLEDGEMENT_PREFERENCE = 'Acknowledgement Preference'
 
 # Fidelity Input Fields
 FID_ACH_GROUP_ID = "ACH Group Id"
@@ -134,6 +136,11 @@ STRIPE_SOURCE_META = 'source (metadata)'
 STRIPE_ROUNDUPCHARGETYPE_META = 'roundupChargeType (metadata)'
 STRIPE_PAGE_TYPE_META = 'page_type (metadata)'
 STRIPE_USER_TYPE_META = 'user_type (metadata)'
+# These are messages that could appear in the STRIPE description field:
+STRIPE_DESC_GIVE_LIVELY = 'Give Lively / Smart Donations'
+STRIPE_DESC_MEMORY = 'In Memory of'
+STRIPE_DESC_HONOR = 'In Honor of'
+STRIPE_DESC_ROUNDUP = 'RoundUp:'
 
 
 # ----- These are the maps for the input fields to the LGL fields ----- #
@@ -199,8 +206,18 @@ STRIPE_MAP = {
     STRIPE_POSTAL_CODE_META: LGL_POSTAL_CODE,
     STRIPE_COUNTRY_META: LGL_COUNTRY,
     STRIPE_CAMPAIGN_INTERNAL_NAME_META: LGL_CAMPAIGN_NAME,
-    STRIPE_MAILING_ADDRESS_META: LGL_ADDRESS_LINE_1,  # This contains the entire comma separated mailing address.
+    # These are fields that will be added during Stripe processing.  Adding them here gets them copied into
+    # the final donor CSV file.
+    LGL_ADDRESS_LINE_1: LGL_ADDRESS_LINE_1,
+    LGL_ADDRESS_LINE_2: LGL_ADDRESS_LINE_2,
+    LGL_ADDRESS_LINE_3: LGL_ADDRESS_LINE_3,
+    LGL_CITY: LGL_CITY,
+    LGL_STATE: LGL_STATE,
+    LGL_POSTAL_CODE: LGL_POSTAL_CODE,
+    LGL_ACKNOWLEDGEMENT_PREFERENCE: LGL_ACKNOWLEDGEMENT_PREFERENCE,
+    LGL_PAYMENT_TYPE: LGL_PAYMENT_TYPE,
     # --- These fields are ignored --- #
+    STRIPE_MAILING_ADDRESS_META: IGNORE_FIELD,  # This contains the entire comma separated mailing address.
     STRIPE_SELLER_MESSAGE: IGNORE_FIELD,
     STRIPE_AMOUNT_REFUNDED: IGNORE_FIELD,
     STRIPE_CURRENCY: IGNORE_FIELD,
