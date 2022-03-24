@@ -23,7 +23,15 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
     def get_map(self, input_keys):
         return cc.STRIPE_MAP
 
-    # TODO: Collect only correct lines, clean up description, and split up the address properly.
+    # This method culls and cleans the donor data from the input data.  There are a number of rules that need to
+    # be followed for this process:
+    #
+    #   - Only include rows that don't have "Failed" or "Refunded" in the status
+    #   - Normalize the mailing address for LGL (it's one field in the input and needs to be broken up)
+    #   - Clean up the description
+    #   - Handle the "RoundUp" users (the name needs to be copied into the proper fields.
+    #
+    # Side Effects: self.donor_data is populated
     def initialize_donor_data(self):
         log.debug('Entering')
         self.donor_data = {}
@@ -46,25 +54,18 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         log.debug('Entering')
         lgl = lgl_api.LglApi()
         donor_names = self.donor_data[cc.STRIPE_CUSTOMER_DESCRIPTION]
+        donor_first_names = self.donor_data[cc.STRIPE_USER_FIRST_NAME_META]
+        donor_last_names = self.donor_data[cc.STRIPE_USER_LAST_NAME_META]
         lgl_ids = {}
         for index in donor_names.keys():
             # If there is no name, you get a float not_a_number (nan) value, so cast everything to string.
             name = str(donor_names[index])
+            if len(name) == 0 or name == 'nan':  # Is name empty?
+                # Try the first and last name fields.
+                first_name = str(donor_first_names[index])
+                if len(first_name) > 1 and first_name != 'nan':  # Does first_name have a value?
+                    name = first_name + ' ' + str(donor_last_names[index])
             if len(name) > 1 and name != 'nan':  # Make sure we don't have a blank name
-                cid = lgl.find_constituent_id_by_name(name)
-                lgl_ids[index] = cid
-        return lgl_ids
-
-    def bad_get_lgl_constituent_ids(self):
-        log.debug('Entering')
-        lgl = lgl_api.LglApi()
-        donor_first_names = self.donor_data[cc.STRIPE_USER_FIRST_NAME_META]
-        donor_last_names = self.donor_data[cc.STRIPE_USER_LAST_NAME_META]
-        lgl_ids = {}
-        for index in donor_first_names.keys():
-            name = donor_first_names[index] + ' ' + donor_last_names[index]
-            log.debug('At index {}, searching for {}'.format(index, name))
-            if len(name) > 1:  # Make sure we don't have a blank name
                 cid = lgl.find_constituent_id_by_name(name)
                 lgl_ids[index] = cid
         return lgl_ids
