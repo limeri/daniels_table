@@ -114,8 +114,14 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
         donor_first_names = self.donor_data[cc.BEN_DONOR_FIRST_NAME]
         donor_last_names = self.donor_data[cc.BEN_DONOR_LAST_NAME]
         lgl_ids = {}
+        names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
         for index in donor_first_names.keys():
             name = donor_first_names[index] + ' ' + donor_last_names[index]
-            cid = lgl.find_constituent_id_by_name(name)
+            # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
+            if name in names_found.keys():
+                cid = names_found[name]
+            else:
+                cid = lgl.find_constituent_id_by_name(name)
             lgl_ids[index] = cid
+            names_found[name] = cid
         return lgl_ids

@@ -31,8 +31,14 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
         lgl = lgl_api.LglApi()
         donor_names = self.donor_data[cc.FID_ADDRESSEE_NAME]
         lgl_ids = {}
+        names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
         for index in donor_names.keys():
             name = donor_names[index]
-            cid = lgl.find_constituent_id_by_name(name)
+            # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
+            if name in names_found.keys():
+                cid = names_found[name]
+            else:
+                cid = lgl.find_constituent_id_by_name(name)
             lgl_ids[index] = cid
+            names_found[name] = cid
         return lgl_ids

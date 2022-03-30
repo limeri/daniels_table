@@ -57,6 +57,7 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         donor_first_names = self.donor_data[cc.STRIPE_USER_FIRST_NAME_META]
         donor_last_names = self.donor_data[cc.STRIPE_USER_LAST_NAME_META]
         lgl_ids = {}
+        names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
         for index in donor_names.keys():
             # If there is no name, you get a float not_a_number (nan) value, so cast everything to string.
             name = str(donor_names[index])
@@ -66,8 +67,13 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
                 if len(first_name) > 1 and first_name != 'nan':  # Does first_name have a value?
                     name = first_name + ' ' + str(donor_last_names[index])
             if len(name) > 1 and name != 'nan':  # Make sure we don't have a blank name
-                cid = lgl.find_constituent_id_by_name(name)
+                # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
+                if name in names_found.keys():
+                    cid = names_found[name]
+                else:
+                    cid = lgl.find_constituent_id_by_name(name)
                 lgl_ids[index] = cid
+                names_found[name] = cid
         return lgl_ids
 
     # ----- P R I V A T E   M E T H O D S ----- #

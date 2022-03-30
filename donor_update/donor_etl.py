@@ -61,7 +61,7 @@ def main(argv):
     # noinspection PyBroadException
     try:
         opts, args = getopt.getopt(argv, 'hi:o:,', ['input_file=', 'output_file='])
-    except Exception as e:
+    except Exception:
         usage()
         sys.exit(2)
 
