@@ -5,8 +5,6 @@
 import column_constants as cc
 import logging
 
-from datetime import datetime
-
 import donor_file_reader
 import lgl_api
 
@@ -55,8 +53,8 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
 
     # ----- Code Starts -----
 
-    # The input_data setter method will separate the donation data from the input_data and store it in a dict called
-    # self.donor_data.  The format of the dict will be:
+    # The initialize_donor_data method will separate the donation data from the input_data and store it in a dict
+    # called self.donor_data.  The format of the dict will be:
     #
     # {column_name_1 {0: <row data>, 1: <row data>, ...}, column_name_2 ...}
     #

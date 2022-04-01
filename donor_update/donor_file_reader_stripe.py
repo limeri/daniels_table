@@ -155,14 +155,19 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         address_fields = self.donor_data[cc.STRIPE_MAILING_ADDRESS_META][row_key].split(',')
 
         # We know how many fields are used based on the length of address_fields.
-        address_index = 0
-        if len(address_fields) == 4:
-            self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[address_index]; address_index += 1
-        elif len(address_fields) == 5:
-            self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[address_index]; address_index += 1
+        # If there are less than 4 address fields, we don't know what they are.
+        if len(address_fields) < 4 or len(address_fields) > 6:
+            address = self.donor_data[cc.STRIPE_MAILING_ADDRESS_META][row_key]  # Just keeping code readable
+            log.error('Less than four or more than six address lines were found for row {} - "{}".'.format(row_key,
+                                                                                                           address))
+            return
+
+        self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[0]
+
+        address_index = 1  # Note that address_index is incremented on the same line as the assignment.
+        if len(address_fields) == 5:
             self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = address_fields[address_index]; address_index += 1
         elif len(address_fields) == 6:
-            self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[address_index]; address_index += 1
             self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = address_fields[address_index]; address_index += 1
             self.donor_data[cc.LGL_ADDRESS_LINE_3_DNI][row_key] = address_fields[address_index]; address_index += 1
         # Add city, state, and zip.
