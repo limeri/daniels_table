@@ -86,12 +86,12 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         log.debug('Entering')
         for key in self.input_data:
             self.donor_data[key] = {}
-        self.donor_data[cc.LGL_ADDRESS_LINE_1] = {}
-        self.donor_data[cc.LGL_ADDRESS_LINE_2] = {}
-        self.donor_data[cc.LGL_ADDRESS_LINE_3] = {}
-        self.donor_data[cc.LGL_CITY] = {}
-        self.donor_data[cc.LGL_STATE] = {}
-        self.donor_data[cc.LGL_POSTAL_CODE] = {}
+        self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI] = {}
+        self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI] = {}
+        self.donor_data[cc.LGL_ADDRESS_LINE_3_DNI] = {}
+        self.donor_data[cc.LGL_CITY_DNI] = {}
+        self.donor_data[cc.LGL_STATE_DNI] = {}
+        self.donor_data[cc.LGL_POSTAL_CODE_DNI] = {}
         self.donor_data[cc.LGL_ACKNOWLEDGEMENT_PREFERENCE] = {}
         self.donor_data[cc.LGL_PAYMENT_TYPE] = {}
 
@@ -105,12 +105,12 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         log.debug('Entering')
         for label_key in self.input_data.keys():
             self.donor_data[label_key][row_key] = self.input_data[label_key][row_key]
-        self.donor_data[cc.LGL_ADDRESS_LINE_1][row_key] = ''
-        self.donor_data[cc.LGL_ADDRESS_LINE_2][row_key] = ''
-        self.donor_data[cc.LGL_ADDRESS_LINE_3][row_key] = ''
-        self.donor_data[cc.LGL_CITY][row_key] = ''
-        self.donor_data[cc.LGL_STATE][row_key] = ''
-        self.donor_data[cc.LGL_POSTAL_CODE][row_key] = ''
+        self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = ''
+        self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = ''
+        self.donor_data[cc.LGL_ADDRESS_LINE_3_DNI][row_key] = ''
+        self.donor_data[cc.LGL_CITY_DNI][row_key] = ''
+        self.donor_data[cc.LGL_STATE_DNI][row_key] = ''
+        self.donor_data[cc.LGL_POSTAL_CODE_DNI][row_key] = ''
 
     # This private method will clean up the description:
     # - Delete description unless it says "In Memory of", "In Honor of", or "Roundup"
@@ -157,15 +157,15 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         # We know how many fields are used based on the length of address_fields.
         address_index = 0
         if len(address_fields) == 4:
-            self.donor_data[cc.LGL_ADDRESS_LINE_1][row_key] = address_fields[address_index]; address_index += 1
+            self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[address_index]; address_index += 1
         elif len(address_fields) == 5:
-            self.donor_data[cc.LGL_ADDRESS_LINE_1][row_key] = address_fields[address_index]; address_index += 1
-            self.donor_data[cc.LGL_ADDRESS_LINE_2][row_key] = address_fields[address_index]; address_index += 1
+            self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[address_index]; address_index += 1
+            self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = address_fields[address_index]; address_index += 1
         elif len(address_fields) == 6:
-            self.donor_data[cc.LGL_ADDRESS_LINE_1][row_key] = address_fields[address_index]; address_index += 1
-            self.donor_data[cc.LGL_ADDRESS_LINE_2][row_key] = address_fields[address_index]; address_index += 1
-            self.donor_data[cc.LGL_ADDRESS_LINE_3][row_key] = address_fields[address_index]; address_index += 1
+            self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[address_index]; address_index += 1
+            self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = address_fields[address_index]; address_index += 1
+            self.donor_data[cc.LGL_ADDRESS_LINE_3_DNI][row_key] = address_fields[address_index]; address_index += 1
         # Add city, state, and zip.
-        self.donor_data[cc.LGL_CITY][row_key] = address_fields[address_index]; address_index += 1
-        self.donor_data[cc.LGL_STATE][row_key] = address_fields[address_index]; address_index += 1
-        self.donor_data[cc.LGL_POSTAL_CODE][row_key] = address_fields[address_index]
+        self.donor_data[cc.LGL_CITY_DNI][row_key] = address_fields[address_index]; address_index += 1
+        self.donor_data[cc.LGL_STATE_DNI][row_key] = address_fields[address_index]; address_index += 1
+        self.donor_data[cc.LGL_POSTAL_CODE_DNI][row_key] = address_fields[address_index]
