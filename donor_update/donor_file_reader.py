@@ -58,6 +58,7 @@ class DonorFileReader:
     #
     # Returns - a dict of LGL IDs.  The keys of the dict will match the names found by get_donor_names and will
     #   be in the format: {0: id_1, 1: id_2, ...}
+    # TODO: Make common method that calls "get_constituent_name" method in subclasses.
     def get_lgl_constituent_ids(self):
         raise NotImplementedError
 
