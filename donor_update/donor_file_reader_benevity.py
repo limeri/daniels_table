@@ -100,7 +100,7 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
                 self.donor_data[label][row_index] = row[label_index]
 
     # Return the map to be used by map_keys.
-    def get_map(self, input_keys):
+    def get_map(self):
         return cc.BENEVITY_MAP
 
     # This method will get the LGL IDs based on the name of the constituent.

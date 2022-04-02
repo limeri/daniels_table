@@ -37,6 +37,7 @@ LGL_GIFT_NOTE = 'Gift note'
 LGL_CAMPAIGN_NAME = 'Campaign name'
 LGL_PAYMENT_TYPE = 'Payment type'
 LGL_ACKNOWLEDGEMENT_PREFERENCE = 'Acknowledgment Preference'
+LGL_CHECK_REF_NO = 'Check/reference No.'
 
 # Fidelity Input Fields
 FID_ACH_GROUP_ID = "ACH Group Id"
@@ -84,6 +85,7 @@ BEN_STATE = 'State/Province'
 BEN_TOTAL_DONATION_TO_BE_ACKNOWLEDGED = 'Total Donation to be Acknowledged'
 BEN_TRANSACTION_ID = 'Transaction ID'
 
+# Stripe input fields
 STRIPE_ID = 'id'
 STRIPE_DESCRIPTION = 'description'
 STRIPE_SELLER_MESSAGE = 'seller_message'
@@ -155,6 +157,15 @@ STRIPE_DESC_MEMORY = 'In Memory of'
 STRIPE_DESC_HONOR = 'In Honor of'
 STRIPE_DESC_ROUNDUP = 'RoundUp:'
 
+# Quickbook input fields
+QB_DATE = 'Date'
+QB_TRANSACTION_TYPE = 'Transaction Type'
+QB_NUM = 'Num'
+QB_DONOR = 'Donor'
+QB_VENDOR = 'Vendor'
+QB_MEMO_DESCRIPTION = 'Memo/Description'
+QB_CLR = 'Clr'
+QB_AMOUNT = 'Amount'
 
 # ----- These are the maps for the input fields to the LGL fields ----- #
 
@@ -285,4 +296,16 @@ STRIPE_MAP = {
     STRIPE_PAGE_TYPE_META: IGNORE_FIELD,
     STRIPE_USER_TYPE_META: IGNORE_FIELD,
     STRIPE_ID: IGNORE_FIELD,
+}
+
+QB_MAP = {
+    QB_DATE: LGL_GIFT_DATE,
+    QB_NUM: LGL_CHECK_REF_NO,
+    QB_DONOR: LGL_FULL_NAME_DNI,
+    QB_VENDOR: LGL_FULL_NAME_DNI,
+    QB_MEMO_DESCRIPTION: LGL_GIFT_NOTE,
+    QB_AMOUNT:LGL_GIFT_AMOUNT,
+    # --- These fields are ignored --- #
+    QB_TRANSACTION_TYPE: IGNORE_FIELD,
+    QB_CLR: IGNORE_FIELD,
 }

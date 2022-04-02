@@ -50,7 +50,7 @@ class DonorFileReader:
 
     # Return the map to be used by map_keys.
     # This method must be implemented by each subclass.
-    def get_map(self, input_keys):
+    def get_map(self):
         raise NotImplementedError
 
     # This method will get the LGL ID based on the name of the constituent.
@@ -74,7 +74,7 @@ class DonorFileReader:
         log.debug('Entering')
         input_keys = self.donor_data.keys()
         output_data = {}
-        field_map = self.get_map(input_keys=input_keys)
+        field_map = self.get_map()
         for input_key in input_keys:
             if input_key not in field_map.keys():
                 log.debug('The input key "{}" was not found in the field map.  It will be ignored.'.format(input_key))

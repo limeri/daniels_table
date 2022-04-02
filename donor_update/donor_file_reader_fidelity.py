@@ -20,7 +20,7 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
     #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868}, ...
 
     # Return the map to be used by map_keys.
-    def get_map(self, input_keys):
+    def get_map(self):
         return cc.FIDELITY_MAP
 
     # This method will get the LGL IDs based on the name of the constituent.
