@@ -144,7 +144,8 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
                         str(self.input_data[CHECK_NUM_KEY][index]) != cc.EMPTY_CELL and \
                         index < num_of_elements:
                     self.donor_data[cc.QB_DATE][donor_index] = donor_date
-                    self.donor_data[cc.QB_NUM][donor_index] = self.input_data[CHECK_NUM_KEY][index]
+                    if type(self.input_data[CHECK_NUM_KEY][index]) == int:
+                        self.donor_data[cc.QB_NUM][donor_index] = self.input_data[CHECK_NUM_KEY][index]
                     # The donor can be either in the donor field or the vendor field.
                     if self.input_data[NAME_KEY][index] and str(self.input_data[NAME_KEY][index]) != cc.EMPTY_CELL:
                         self.donor_data[cc.QB_DONOR][donor_index] = self.input_data[NAME_KEY][index]
@@ -154,7 +155,8 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
                         # Not sure what to do if no name is found yet.
                         log.error("No name was found for check number {}.".
                                   format(self.input_data[CHECK_NUM_KEY][index]))
-                    self.donor_data[cc.QB_MEMO_DESCRIPTION][donor_index] = self.input_data[DESC_KEY][index]
+                    desc = self.input_data[DESC_KEY][index]
+                    self.donor_data[cc.QB_MEMO_DESCRIPTION][donor_index] = self._clean_campaign(description=desc)
                     self.donor_data[cc.QB_AMOUNT][donor_index] = self.input_data[AMT_KEY][index]
                     donor_index += 1
                     index += 1
@@ -179,25 +181,20 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
             if name in names_found.keys():
                 cid = names_found[name]
             else:
-                cid = lgl.find_constituent_id_by_name(name)
+                cid = lgl.find_constituent_id(name)
             lgl_ids[index] = cid
             names_found[name] = cid
         return lgl_ids
 
-    def old_get_lgl_constituent_ids(self):
-        log.debug('Entering')
-        lgl = lgl_api.LglApi()
-        donor_first_names = self.donor_data[cc.BEN_DONOR_FIRST_NAME]
-        donor_last_names = self.donor_data[cc.BEN_DONOR_LAST_NAME]
-        lgl_ids = {}
-        names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
-        for index in donor_first_names.keys():
-            name = donor_first_names[index] + ' ' + donor_last_names[index]
-            # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
-            if name in names_found.keys():
-                cid = names_found[name]
-            else:
-                cid = lgl.find_constituent_id_by_name(name)
-            lgl_ids[index] = cid
-            names_found[name] = cid
-        return lgl_ids
+    # This private method will take the description and clean it up for the campaign field.  The rules are:
+    #   - Eliminate any description that is just the word, "donation".
+    #   - Map anything left to a known campaign name if possible.  Otherwise return ''.
+    #
+    # Args -
+    #   description - the description field from the original data
+    #
+    # Returns - a string with the correct campaign name or an empty string
+    def _clean_campaign(self, description):
+        if description.lower().strip() == 'donation':
+            return ''
+        return description

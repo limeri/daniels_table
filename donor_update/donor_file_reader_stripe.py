@@ -56,6 +56,7 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         donor_names = self.donor_data[cc.STRIPE_CUSTOMER_DESCRIPTION]
         donor_first_names = self.donor_data[cc.STRIPE_USER_FIRST_NAME_META]
         donor_last_names = self.donor_data[cc.STRIPE_USER_LAST_NAME_META]
+        email_addresses = self.donor_data[cc.STRIPE_CUSTOMER_EMAIL]
         lgl_ids = {}
         names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
         for index in donor_names.keys():
@@ -71,7 +72,7 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
                 if name in names_found.keys():
                     cid = names_found[name]
                 else:
-                    cid = lgl.find_constituent_id_by_name(name)
+                    cid = lgl.find_constituent_id(name=name, email=email_addresses[index])
                 lgl_ids[index] = cid
                 names_found[name] = cid
         return lgl_ids

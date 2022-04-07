@@ -60,7 +60,7 @@ def read_file(file_path):
 # Returns: a DonorFileReader object
 # Side Effects: the input_data and donor_data properties in the DonorFileReader object are populated
 def get_file_reader(file_path):
-    log.debug('Reading file, "{}".'.format(file_path))
+    log.debug('-------------------- Reading file, "{}" --------------------'.format(file_path))
     file_reader = ''
     input_data = read_file(file_path=file_path)
     # If the input file was an Excel file, the return data will be in a dict.

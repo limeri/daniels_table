@@ -15,6 +15,7 @@ SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
 SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
 SAMPLE_FILE_STRIPE = 'sample_files\\stripe.xlsx'
 SAMPLE_FILE_QB = 'sample_files\\qb.xlsx'
+SAMPLE_FILE_QUICKBOOKS = 'sample_files\\quickbooks.xlsx'
 SAMPLE_FILE = SAMPLE_FILE_BENEVITY
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
@@ -34,7 +35,7 @@ def setup_logger():
     # Create a file logger
     file_formatter = logging.Formatter(
         '%(asctime)s - %(module)s - %(funcName)s - %(lineno)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler('excel_{:%Y-%m-%d}.log'.format(datetime.now()))
+    file_handler = logging.FileHandler('excel_{:%Y%m%d%H%M%S}.log'.format(datetime.now()))
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logging.DEBUG)
     log.addHandler(file_handler)
@@ -46,8 +47,6 @@ def setup_logger():
     log.addHandler(console_handler)
 
     log.setLevel(logging.DEBUG)
-    # Write a divider line to the log file so it's easy to distinguish executions.
-    log.debug('\n\n------------------------------ {:%H:%M:%S} ------------------------------\n'.format(datetime.now()))
 
 
 def usage():
@@ -93,6 +92,7 @@ def main(argv):
 def reformat_data(input_files, output_file):
     final_output = {}
     for input_file in input_files:
+        # Write a divider line to the log file so it's easy to distinguish files.
         try:
             donor_file_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
         except ValueError:
@@ -172,14 +172,14 @@ if __name__ == '__main__':
     setup_logger()
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
-        # sys.argv.append('-i')
-        # sys.argv.append(SAMPLE_FILE_FIDELITY)
-        # sys.argv.append('-i')
-        # sys.argv.append(SAMPLE_FILE_BENEVITY)
-        # sys.argv.append('-i')
-        # sys.argv.append(SAMPLE_FILE_STRIPE)
         sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_QB)
+        sys.argv.append(SAMPLE_FILE_FIDELITY)
+        sys.argv.append('-i')
+        sys.argv.append(SAMPLE_FILE_BENEVITY)
+        sys.argv.append('-i')
+        sys.argv.append(SAMPLE_FILE_STRIPE)
+        sys.argv.append('-i')
+        sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
 
     # If there are args, we expect a list of excel files.
     log.debug("There are {} args.".format(len(sys.argv)))

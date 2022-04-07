@@ -38,7 +38,7 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
             if name in names_found.keys():
                 cid = names_found[name]
             else:
-                cid = lgl.find_constituent_id_by_name(name)
+                cid = lgl.find_constituent_id(name=name)
             lgl_ids[index] = cid
             names_found[name] = cid
         return lgl_ids
