@@ -14,6 +14,7 @@ import donor_file_reader_factory
 SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
 SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
 SAMPLE_FILE_STRIPE = 'sample_files\\stripe.xlsx'
+SAMPLE_FILE_QB = 'sample_files\\qb.xlsx'
 SAMPLE_FILE = SAMPLE_FILE_BENEVITY
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
@@ -96,12 +97,18 @@ def reformat_data(input_files, output_file):
             donor_file_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
         except ValueError:
             log.info('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.format(input_file))
+            continue
         try:
             output = donor_file_reader.map_fields()
         except NameError:
             log.info('No field containing a donor name was found in the file, "{}", so it is not possible to look "'
                      'up LGL IDs.  This may not be a valid input file.'.format(input_file))
+            continue
         final_output = append_data(input_data=output, current_data=final_output)
+
+    if final_output == {}:
+        log.error('No data was successfully processed.  The output file "{}" will not be created.'.format(output_file))
+        return
 
     # Make sure all the Gift Dates are Pandas Timestamps.
     for data_key in final_output[cc.LGL_GIFT_DATE]:
@@ -165,12 +172,14 @@ if __name__ == '__main__':
     setup_logger()
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
+        # sys.argv.append('-i')
+        # sys.argv.append(SAMPLE_FILE_FIDELITY)
+        # sys.argv.append('-i')
+        # sys.argv.append(SAMPLE_FILE_BENEVITY)
+        # sys.argv.append('-i')
+        # sys.argv.append(SAMPLE_FILE_STRIPE)
         sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_FIDELITY)
-        sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_BENEVITY)
-        sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_STRIPE)
+        sys.argv.append(SAMPLE_FILE_QB)
 
     # If there are args, we expect a list of excel files.
     log.debug("There are {} args.".format(len(sys.argv)))

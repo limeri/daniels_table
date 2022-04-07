@@ -61,12 +61,12 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         for index in donor_names.keys():
             # If there is no name, you get a float not_a_number (nan) value, so cast everything to string.
             name = str(donor_names[index])
-            if len(name) == 0 or name == 'nan':  # Is name empty?
+            if len(name) == 0 or name == cc.EMPTY_CELL:  # Is name empty?
                 # Try the first and last name fields.
                 first_name = str(donor_first_names[index])
-                if len(first_name) > 1 and first_name != 'nan':  # Does first_name have a value?
+                if len(first_name) > 1 and first_name != cc.EMPTY_CELL:  # Does first_name have a value?
                     name = first_name + ' ' + str(donor_last_names[index])
-            if len(name) > 1 and name != 'nan':  # Make sure we don't have a blank name
+            if len(name) > 1 and name != cc.EMPTY_CELL:  # Make sure we don't have a blank name
                 # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
                 if name in names_found.keys():
                     cid = names_found[name]

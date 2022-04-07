@@ -15,6 +15,7 @@ import column_constants as cc
 import donor_file_reader_benevity as benevity_reader
 import donor_file_reader_fidelity as fidelity_reader
 import donor_file_reader_stripe as stripe_reader
+import donor_file_reader_quickbooks as qb_reader
 
 log = logging.getLogger()
 
@@ -72,6 +73,8 @@ def get_file_reader(file_path):
             file_reader = fidelity_reader.DonorFileReaderFidelity()
         elif set(input_keys) <= set(cc.STRIPE_MAP.keys()):
             file_reader = stripe_reader.DonorFileReaderStripe()
+        elif "Daniel's Table dba The Foodie Cafe" in input_keys:
+            file_reader = qb_reader.DonorFileReaderQuickbooks()
     elif type(input_data) == list:
         input_keys = input_data[11]  # For Benevity, the column names are on line 12.  Compare them to the Benevity map.
         if set(input_keys) <= set(cc.BENEVITY_MAP.keys()):

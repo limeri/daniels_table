@@ -4,11 +4,24 @@
 
 import column_constants as cc
 import logging
+import re
+
+from datetime import datetime
 
 import donor_file_reader
 import lgl_api
 
 SAMPLE_FILE = 'sample_files\\quickbooks.xlsx'
+COLUMN_NAME_INDEX = 3
+INITIAL_DATE_INDEX = 5
+# These are the keys in the self.input_data where we find the data we want.
+DATE_KEY = 'Unnamed: 1'
+CHECK_NUM_KEY = 'Unnamed: 3'
+NAME_KEY = 'Unnamed: 4'
+VENDOR_KEY = 'Unnamed: 5'
+DESC_KEY = 'Unnamed: 6'
+AMT_KEY = 'Unnamed: 8'
+
 log = logging.getLogger()
 
 
@@ -90,32 +103,62 @@ log = logging.getLogger()
 #
 class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
     # The initialize_donor_data method will separate the donation data from the input_data and store it in a dict
-    # called self.donor_data.  The format of the dict will be:
+    # called self.donor_data.  The format of the self.donor_data dict will be:
     #
     # {column_name_1 {0: <row data>, 1: <row data>, ...}, column_name_2 ...}
     #
     # The format of the input data is described above in the class comments.
     #
+    # The procedure will be:
+    #   - The self.donor_data key names come from the 'Unnamed' columns index 3 (COLUMN_NAME_INDEX).
+    #   - Start index at 5 (INITIAL_DATE_INDEX).
+    #   - Loop through 'Unnamed 1' until you get to a date.
+    #   - Check in 'Unnamed 3' (check num) at index+1 for a number.
+    #       - If no number, continue looping through 'Unnamed 1' for another date
+    #       - If there is a number, gather info from other columns at that index+1:
+    #           - Date is from 'Unnamed: 1' (prior index)
+    #           - Check number is gathered from 'Unnamed: 3'
+    #           - name from 'Unnamed: 4' or 'Unnamed: 5'
+    #           - desc/campaign from 'Unnamed: 6'
+    #           - amount is from 'Unnamed: 8'
+    #
     # Returns - none
     # Side Effect - the self.data_donor property is populated.
     def initialize_donor_data(self):
         log.debug('Entering')
-        # Separate the donor data from everything else (exclude the labels).
-        donor_rows = []
-        i = 12  # Start at line 13 (exclude the labels)
-        while self.input_data[i][0] != 'Totals':
-            donor_rows.append(self.input_data[i])
-            i += 1
-        # Initialize the dict from labels (row 12 of the input_data).
-        column_labels = self.input_data[11]
-        for label in column_labels:
-            self.donor_data[label] = {}
-        # Add the donor rows to the data.
-        for row in donor_rows:  # Start with a row of donor data e.g. ['Liberty Mutual', 'DANIELS TABLE INC', ...]
-            for label in column_labels:  # Now get a label e.g. 'Company'
-                row_index = donor_rows.index(row)
-                label_index = column_labels.index(label)
-                self.donor_data[label][row_index] = row[label_index]
+        self.donor_data = {}
+        self.donor_data[cc.QB_DATE] = {}
+        self.donor_data[cc.QB_NUM] = {}
+        self.donor_data[cc.QB_DONOR] = {}
+        self.donor_data[cc.QB_MEMO_DESCRIPTION] = {}
+        self.donor_data[cc.QB_AMOUNT] = {}
+        index = INITIAL_DATE_INDEX
+        num_of_elements = len(self.input_data[DATE_KEY])
+        donor_index = 0
+        while index < num_of_elements:
+            donor_date = str(self.input_data[DATE_KEY][index])
+            # if bool(datetime.strptime(donor_date, '%m/%d/%Y')):
+            if re.match(r'\d{2}/\d{2}/\d{4}', donor_date):
+                index = index + 1
+                while self.input_data[CHECK_NUM_KEY][index] and \
+                        str(self.input_data[CHECK_NUM_KEY][index]) != cc.EMPTY_CELL and \
+                        index < num_of_elements:
+                    self.donor_data[cc.QB_DATE][donor_index] = donor_date
+                    self.donor_data[cc.QB_NUM][donor_index] = self.input_data[CHECK_NUM_KEY][index]
+                    # The donor can be either in the donor field or the vendor field.
+                    if self.input_data[NAME_KEY][index] and str(self.input_data[NAME_KEY][index]) != cc.EMPTY_CELL:
+                        self.donor_data[cc.QB_DONOR][donor_index] = self.input_data[NAME_KEY][index]
+                    elif self.input_data[VENDOR_KEY][index] and str(self.input_data[VENDOR_KEY][index]) != cc.EMPTY_CELL:
+                        self.donor_data[cc.QB_DONOR][donor_index] = self.input_data[VENDOR_KEY][index]
+                    else:
+                        # Not sure what to do if no name is found yet.
+                        log.error("No name was found for check number {}.".
+                                  format(self.input_data[CHECK_NUM_KEY][index]))
+                    self.donor_data[cc.QB_MEMO_DESCRIPTION][donor_index] = self.input_data[DESC_KEY][index]
+                    self.donor_data[cc.QB_AMOUNT][donor_index] = self.input_data[AMT_KEY][index]
+                    donor_index += 1
+                    index += 1
+            index += 1  # This is outside the if bool block.
 
     # Return the map to be used by map_keys.
     def get_map(self):
@@ -125,6 +168,23 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
     #
     # Returns - a dict of LGL IDs.  The keys of the dict will be in the format: {0: id_1, 1: id_2, ...}
     def get_lgl_constituent_ids(self):
+        log.debug('Entering')
+        lgl = lgl_api.LglApi()
+        donor_names = self.donor_data[cc.QB_DONOR]
+        lgl_ids = {}
+        names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
+        for index in donor_names.keys():
+            name = donor_names[index]
+            # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
+            if name in names_found.keys():
+                cid = names_found[name]
+            else:
+                cid = lgl.find_constituent_id_by_name(name)
+            lgl_ids[index] = cid
+            names_found[name] = cid
+        return lgl_ids
+
+    def old_get_lgl_constituent_ids(self):
         log.debug('Entering')
         lgl = lgl_api.LglApi()
         donor_first_names = self.donor_data[cc.BEN_DONOR_FIRST_NAME]

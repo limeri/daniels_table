@@ -3,6 +3,7 @@
 
 IGNORE_FIELD = '***** IGNORE THIS FIELD *****'
 DO_NOT_IMPORT = 'DO NOT IMPORT - '
+EMPTY_CELL = 'nan'
 
 # LGL Fields -- Some of the fields will not be imported when donations are imported.  They have an additional _DNI
 # constant that is used by the maps.
