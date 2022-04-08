@@ -1,0 +1,9 @@
+__pycache__
+.idea
+*.csv
+Pipfile
+Pipfile.lock
+*.log
+~*
+march_files
+march_files/*

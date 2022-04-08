@@ -172,12 +172,12 @@ if __name__ == '__main__':
     setup_logger()
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
-        sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_FIDELITY)
-        sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_BENEVITY)
-        sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_STRIPE)
+        # sys.argv.append('-i')
+        # sys.argv.append(SAMPLE_FILE_FIDELITY)
+        # sys.argv.append('-i')
+        # sys.argv.append(SAMPLE_FILE_BENEVITY)
+        # sys.argv.append('-i')
+        # sys.argv.append(SAMPLE_FILE_STRIPE)
         sys.argv.append('-i')
         sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
 

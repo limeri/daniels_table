@@ -14,6 +14,7 @@ import lgl_api
 SAMPLE_FILE = 'sample_files\\quickbooks.xlsx'
 COLUMN_NAME_INDEX = 3
 INITIAL_DATE_INDEX = 5
+GENERAL = 'General'
 # These are the keys in the self.input_data where we find the data we want.
 DATE_KEY = 'Unnamed: 1'
 CHECK_NUM_KEY = 'Unnamed: 3'
@@ -131,10 +132,12 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
         self.donor_data[cc.QB_NUM] = {}
         self.donor_data[cc.QB_DONOR] = {}
         self.donor_data[cc.QB_MEMO_DESCRIPTION] = {}
+        self.donor_data[cc.LGL_CAMPAIGN_NAME] = {}
         self.donor_data[cc.QB_AMOUNT] = {}
         index = INITIAL_DATE_INDEX
         num_of_elements = len(self.input_data[DATE_KEY])
         donor_index = 0
+        ignore_words = ['benevity', 'fidelity', 'stripe', 'yourcause']  # Ignore any rows with these words in the desc.
         while index < num_of_elements:
             donor_date = str(self.input_data[DATE_KEY][index])
             # if bool(datetime.strptime(donor_date, '%m/%d/%Y')):
@@ -143,21 +146,20 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
                 while self.input_data[CHECK_NUM_KEY][index] and \
                         str(self.input_data[CHECK_NUM_KEY][index]) != cc.EMPTY_CELL and \
                         index < num_of_elements:
+                    desc = self.input_data[DESC_KEY][index]
+                    if set(ignore_words).intersection(desc.lower().split()):
+                        index += 1
+                        continue
                     self.donor_data[cc.QB_DATE][donor_index] = donor_date
                     if type(self.input_data[CHECK_NUM_KEY][index]) == int:
                         self.donor_data[cc.QB_NUM][donor_index] = self.input_data[CHECK_NUM_KEY][index]
-                    # The donor can be either in the donor field or the vendor field.
-                    if self.input_data[NAME_KEY][index] and str(self.input_data[NAME_KEY][index]) != cc.EMPTY_CELL:
-                        self.donor_data[cc.QB_DONOR][donor_index] = self.input_data[NAME_KEY][index]
-                    elif self.input_data[VENDOR_KEY][index] and str(self.input_data[VENDOR_KEY][index]) != cc.EMPTY_CELL:
-                        self.donor_data[cc.QB_DONOR][donor_index] = self.input_data[VENDOR_KEY][index]
-                    else:
-                        # Not sure what to do if no name is found yet.
-                        log.error("No name was found for check number {}.".
-                                  format(self.input_data[CHECK_NUM_KEY][index]))
-                    desc = self.input_data[DESC_KEY][index]
-                    self.donor_data[cc.QB_MEMO_DESCRIPTION][donor_index] = self._clean_campaign(description=desc)
+                    self.donor_data[cc.QB_DONOR][donor_index] = self._find_donor_name(index=index)
                     self.donor_data[cc.QB_AMOUNT][donor_index] = self.input_data[AMT_KEY][index]
+                    # Clean up the desc and campaign.
+                    campaign = self._clean_campaign(description=desc)
+                    self.donor_data[cc.LGL_CAMPAIGN_NAME][donor_index] = campaign
+                    if campaign == GENERAL and desc.lower().strip() != 'donation':
+                        self.donor_data[cc.QB_MEMO_DESCRIPTION][donor_index] = desc
                     donor_index += 1
                     index += 1
             index += 1  # This is outside the if bool block.
@@ -181,10 +183,31 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
             if name in names_found.keys():
                 cid = names_found[name]
             else:
-                cid = lgl.find_constituent_id(name)
+                cid = lgl.find_constituent_id(name, file_name=self.input_file)
             lgl_ids[index] = cid
             names_found[name] = cid
         return lgl_ids
+
+    # -------------------- P R I V A T E   M E T H O D S -------------------- #
+
+    # This private method will figure out the name.
+    #
+    # Args -
+    #   index - The index in the NAME_KEY and VENDOR_KEY fields to use for the name.
+    #
+    # Returns - The name as a string or '' if none is found.
+    # Side effects - an error message is logged if no name is found.  No exception is thrown.
+    def _find_donor_name(self, index):
+        name = ''
+        if self.input_data[NAME_KEY][index] and str(self.input_data[NAME_KEY][index]) != cc.EMPTY_CELL:
+            name = self.input_data[NAME_KEY][index]
+        elif self.input_data[VENDOR_KEY][index] and str(self.input_data[VENDOR_KEY][index]) != cc.EMPTY_CELL:
+            name = self.input_data[VENDOR_KEY][index]
+        else:
+            # Not sure what to do if no name is found yet, so just tell the user.
+            check_num = self.input_data[CHECK_NUM_KEY][index]
+            log.error('No name was found for check number {} in file "{}".'.format(check_num, self.input_file))
+        return name
 
     # This private method will take the description and clean it up for the campaign field.  The rules are:
     #   - Eliminate any description that is just the word, "donation".
@@ -196,5 +219,5 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
     # Returns - a string with the correct campaign name or an empty string
     def _clean_campaign(self, description):
         if description.lower().strip() == 'donation':
-            return ''
-        return description
+            return 'General'
+        return 'General'

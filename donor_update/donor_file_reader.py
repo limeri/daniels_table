@@ -30,6 +30,7 @@ class DonorFileReader:
     def __init__(self):
         self._input_data = {}
         self.donor_data = {}
+        self.input_file = 'Input File Not Known'
 
     @property
     def input_data(self):

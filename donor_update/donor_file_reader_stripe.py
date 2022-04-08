@@ -58,23 +58,31 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         donor_last_names = self.donor_data[cc.STRIPE_USER_LAST_NAME_META]
         email_addresses = self.donor_data[cc.STRIPE_CUSTOMER_EMAIL]
         lgl_ids = {}
-        names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
+        ids_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
         for index in donor_names.keys():
             # If there is no name, you get a float not_a_number (nan) value, so cast everything to string.
             name = str(donor_names[index])
+            email = str(email_addresses[index])
             if len(name) == 0 or name == cc.EMPTY_CELL:  # Is name empty?
                 # Try the first and last name fields.
                 first_name = str(donor_first_names[index])
                 if len(first_name) > 1 and first_name != cc.EMPTY_CELL:  # Does first_name have a value?
                     name = first_name + ' ' + str(donor_last_names[index])
-            if len(name) > 1 and name != cc.EMPTY_CELL:  # Make sure we don't have a blank name
-                # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
-                if name in names_found.keys():
-                    cid = names_found[name]
+            cid = ''
+            # Make sure we have either a name or email address.
+            if (name and name != cc.EMPTY_CELL) or (email and email != cc.EMPTY_CELL):
+                # If the name is found ids_found, then retrieve the ID from the dict instead of making a call.
+                if name in ids_found.keys():
+                    cid = ids_found[name]
+                elif email in ids_found.keys():
+                    cid = ids_found[email]
                 else:
-                    cid = lgl.find_constituent_id(name=name, email=email_addresses[index])
-                lgl_ids[index] = cid
-                names_found[name] = cid
+                    cid = lgl.find_constituent_id(name=name, email=email, file_name=self.input_file)
+                if name and name != cc.EMPTY_CELL:
+                    ids_found[name] = cid
+                else:
+                    ids_found[email] = cid
+            lgl_ids[index] = cid
         return lgl_ids
 
     # ----- P R I V A T E   M E T H O D S ----- #
@@ -159,8 +167,8 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         # If there are less than 4 address fields, we don't know what they are.
         if len(address_fields) < 4 or len(address_fields) > 6:
             address = self.donor_data[cc.STRIPE_MAILING_ADDRESS_META][row_key]  # Just keeping code readable
-            log.error('Less than four or more than six address lines were found for row {} - "{}".'.format(row_key,
-                                                                                                           address))
+            log.error('Less than four or more than six address lines were found for row {} - "{}" in the file "{}".'.
+                      format(row_key, address, self.input_file))
             return
 
         self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[0]

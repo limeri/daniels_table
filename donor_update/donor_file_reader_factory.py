@@ -86,6 +86,7 @@ def get_file_reader(file_path):
         log.error(error_msg)
 
     if file_reader:
+        file_reader.input_file = file_path
         file_reader.input_data = input_data
     else:
         log.error('The input keys "{}" for file "{}" did not match any maps.  This data cannot be processed!'.format(

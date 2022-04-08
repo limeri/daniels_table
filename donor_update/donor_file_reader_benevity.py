@@ -120,7 +120,7 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
             if name in names_found.keys():
                 cid = names_found[name]
             else:
-                cid = lgl.find_constituent_id(name=name, email=email_addresses[index])
+                cid = lgl.find_constituent_id(name=name, email=email_addresses[index], file_name=self.input_file)
             lgl_ids[index] = cid
             names_found[name] = cid
         return lgl_ids

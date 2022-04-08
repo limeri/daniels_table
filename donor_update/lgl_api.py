@@ -7,6 +7,8 @@ import logging
 import re
 import requests
 
+import column_constants as cc
+
 LGL_API_TOKEN = 'TRFuDlxvO7bqTmGMZUJuSeZbzAwgNHqi17hBio2w5CgWeLuwPtCsmk9WAFlxpolTZulduBbd4yT6LsigWP-k2g'
 URL_SEARCH_CONSTITUENT = 'https://api.littlegreenlight.com/api/v1/constituents/search'
 
@@ -50,7 +52,7 @@ class LglApi:
             # Try to remove middle names by removing every second word (Mary Louise Parker becomes Mary Parker).
             search_terms = re.sub(r'(\b\w+) \b\w+ (\b\w+)', r'\1 \2', search_terms)
             data = self._lgl_name_search(name=search_terms)
-        if 'items' not in data or not data['items'] and email and str(email) != 'nan':
+        if 'items' not in data or not data['items'] and email and str(email) != cc.EMPTY_CELL:
             # Try the search by email if possible.
             data = self._lgl_email_search(email=email)
         return data
@@ -60,27 +62,34 @@ class LglApi:
     # Args:
     #   name - the name of the constituent
     #   email - the email address of the constituent (optional)
+    #   file_name - the name of the file that contains the data for error messages (optional)
     #
     # Returns - the LGL constituent ID
-    def find_constituent_id(self, name, email=None):
+    def find_constituent_id(self, name, email=None, file_name=None):
         log.debug('Entering for "{}"'.format(name))
+        if not file_name:
+            file_name = 'Input File Unknown'
         data = self.find_constituent(name=name, email=email)
         if data['items']:
             cid = data['items'][0]['id']
             log.debug('The constituent ID is {}.'.format(cid))
         else:
             cid = ""
-            log.info('The constituent "{}" was not found.'.format(name))  # We want to notify the user about this.
+            log.info('The constituent "{}" from the file "{}" was not found.'.format(name, file_name))
         return cid
 
     # ----- P R I V A T E   M E T H O D S ----- #
 
     # This private method is a convenience method for _lgl_search.  It just adds "name=" to the search target.
     def _lgl_name_search(self, name):
+        if name == cc.EMPTY_CELL:
+            return {}
         return self._lgl_search(search_terms='name=' + name)
 
     # This private method is a convenience method for _lgl_search.  It just adds "eaddr=" to the search target.
     def _lgl_email_search(self, email):
+        if email == cc.EMPTY_CELL:
+            return {}
         return self._lgl_search(search_terms='eaddr=' + email)
 
     # This private method makes the call to search LGL.
