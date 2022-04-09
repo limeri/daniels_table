@@ -69,6 +69,16 @@ def main(argv):
         if opt in ('-h', '-?', '--help'):
             usage()
             sys.exit(0)
+        elif opt.lower() == '-t':
+            # sys.argv.append('test')
+            # sys.argv.append('-i')
+            # sys.argv.append(SAMPLE_FILE_FIDELITY)
+            # sys.argv.append('-i')
+            # sys.argv.append(SAMPLE_FILE_BENEVITY)
+            # sys.argv.append('-i')
+            # sys.argv.append(SAMPLE_FILE_STRIPE)
+            sys.argv.append('-i')
+            sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
         elif opt in ('-i', '--input_file'):
             input_files.append(arg)
         elif opt in ('-o', '--output_file'):
@@ -172,14 +182,24 @@ if __name__ == '__main__':
     setup_logger()
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
-        # sys.argv.append('-i')
-        # sys.argv.append(SAMPLE_FILE_FIDELITY)
-        # sys.argv.append('-i')
-        # sys.argv.append(SAMPLE_FILE_BENEVITY)
-        # sys.argv.append('-i')
-        # sys.argv.append(SAMPLE_FILE_STRIPE)
-        sys.argv.append('-i')
-        sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
+        usage()
+        exit(0)
+
+    if len(sys.argv) == 2:
+        if sys.argv[1].lower() == '-test':
+            sys.argv.remove('-test')
+            # sys.argv.append('-i')
+            # sys.argv.append(SAMPLE_FILE_FIDELITY)
+            # sys.argv.append('-i')
+            # sys.argv.append(SAMPLE_FILE_BENEVITY)
+            # sys.argv.append('-i')
+            # sys.argv.append(SAMPLE_FILE_STRIPE)
+            sys.argv.append('-i')
+            sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
+        else:
+            log.error('The argument "{}" was not recognized.  Only "-test" can be used.'.format(str(sys.argv[1])))
+            usage()
+            exit(1)
 
     # If there are args, we expect a list of excel files.
     log.debug("There are {} args.".format(len(sys.argv)))

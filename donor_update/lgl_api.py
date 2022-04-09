@@ -88,7 +88,7 @@ class LglApi:
 
     # This private method is a convenience method for _lgl_search.  It just adds "eaddr=" to the search target.
     def _lgl_email_search(self, email):
-        if email == cc.EMPTY_CELL:
+        if not email or email == cc.EMPTY_CELL:
             return {}
         return self._lgl_search(search_terms='eaddr=' + email)
 

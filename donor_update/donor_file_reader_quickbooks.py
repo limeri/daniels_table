@@ -140,7 +140,6 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
         ignore_words = ['benevity', 'fidelity', 'stripe', 'yourcause']  # Ignore any rows with these words in the desc.
         while index < num_of_elements:
             donor_date = str(self.input_data[DATE_KEY][index])
-            # if bool(datetime.strptime(donor_date, '%m/%d/%Y')):
             if re.match(r'\d{2}/\d{2}/\d{4}', donor_date):
                 index = index + 1
                 while self.input_data[CHECK_NUM_KEY][index] and \
