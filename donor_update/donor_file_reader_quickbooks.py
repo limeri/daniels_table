@@ -1,6 +1,13 @@
 # This class will read excel input files, retrieve info from them, and create a CSV file with the new format.
 #
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
+#
+# The donor_etl.properties file contains a map of descriptions in the QB input file to campaigns in LGL.  The section
+# in the file is "campaigns" and the list should be the <input file desc>: <LGL campaign>.  There should not be any
+# quotes around any phrases.  An example is below:
+#
+# [campaigns]
+# donation from appeal: Urgent Appeal
 
 import column_constants as cc
 import logging

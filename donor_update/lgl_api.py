@@ -4,7 +4,7 @@
 # LGL Dynamic API doc: https://api.littlegreenlight.com/api-docs/
 #
 # Note that before this class can be used, donor_etl.properties file must be updated.  The section should be called
-# "lgl" and the property should be called "API_TOKEN".
+# "lgl" and the property should be called "API_TOKEN".  An example is below:
 #
 # [lgl]
 # API_TOKEN: YOUR_TOKEN_HERE
