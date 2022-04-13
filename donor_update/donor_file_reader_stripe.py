@@ -11,13 +11,15 @@ log = logging.getLogger()
 
 
 class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
-    # self.input_data is declared by the __init__ module of donor_file_reader.  In this module, it will be a dict
-    # in the format:
+    # self.input_data is declared by the __init__ module of donor_file_reader.  This class handles the case where
+    # the file is in xlsx format.  self.input_data will be a dict in the form:
+    #
     #   {column_name_1 {0: <row data>, 1: <row data>, ...}, column_name_2 ...}
     #
     # Some sample data:
     # {'Recommended By': {0: 'Online at FC', 1: 'Online at FC', 2: 'Online at FC'},
     #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868}, ...
+    #
 
     # Return the map to be used by map_keys.
     def get_map(self):

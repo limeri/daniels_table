@@ -6,7 +6,7 @@ import column_constants as cc
 import logging
 import re
 
-from datetime import datetime
+from configparser import ConfigParser
 
 import donor_file_reader
 import lgl_api
@@ -103,6 +103,11 @@ log = logging.getLogger()
 # following columns have the actual data.
 #
 class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
+    def __init__(self):
+        super().__init__()
+        self.campaigns = {}
+        self._get_campaigns()
+
     # The initialize_donor_data method will separate the donation data from the input_data and store it in a dict
     # called self.donor_data.  The format of the self.donor_data dict will be:
     #
@@ -197,6 +202,7 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
     # Returns - The name as a string or '' if none is found.
     # Side effects - an error message is logged if no name is found.  No exception is thrown.
     def _find_donor_name(self, index):
+        log.debug('Entering for index {}.'.format(index))
         name = ''
         if self.input_data[NAME_KEY][index] and str(self.input_data[NAME_KEY][index]) != cc.EMPTY_CELL:
             name = self.input_data[NAME_KEY][index]
@@ -217,6 +223,20 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
     #
     # Returns - a string with the correct campaign name or an empty string
     def _clean_campaign(self, description):
-        if description.lower().strip() == 'donation':
-            return 'General'
-        return 'General'
+        log.debug('Entering for description "{}".'.format(description))
+        desc = description.lower().strip()
+        campaign = 'General'
+        if desc in self.campaigns.keys():
+            campaign = self.campaigns[desc]
+        return campaign
+
+    # This private method will read the config file for any campaign translations that are needed.
+    #
+    # Side Effects: the self.campaigns class variable is initialized
+    def _get_campaigns(self):
+        log.debug('Entering')
+        c = ConfigParser()
+        c.read('donor_etl.properties')
+        config_items = c.items('campaigns')
+        for item in config_items:
+            self.campaigns[item[0]] = item[1]

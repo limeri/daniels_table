@@ -2,20 +2,32 @@
 #
 # LGL Static API doc: https://api.littlegreenlight.com/api-docs/static.html
 # LGL Dynamic API doc: https://api.littlegreenlight.com/api-docs/
+#
+# Note that before this class can be used, donor_etl.properties file must be updated.  The section should be called
+# "lgl" and the property should be called "API_TOKEN".
+#
+# [lgl]
+# API_TOKEN: YOUR_TOKEN_HERE
 
 import logging
 import re
 import requests
 
+from configparser import ConfigParser
+
 import column_constants as cc
 
-LGL_API_TOKEN = 'TRFuDlxvO7bqTmGMZUJuSeZbzAwgNHqi17hBio2w5CgWeLuwPtCsmk9WAFlxpolTZulduBbd4yT6LsigWP-k2g'
 URL_SEARCH_CONSTITUENT = 'https://api.littlegreenlight.com/api/v1/constituents/search'
 
 log = logging.getLogger()
 
 
 class LglApi:
+
+    def __init__(self):
+        c = ConfigParser()
+        c.read('donor_etl.properties')
+        self.lgl_api_token = c.get('lgl', 'api_token')
 
     # This method will search for a name in LGL's database.
     #
@@ -101,7 +113,7 @@ class LglApi:
     #   {'api_version': '1.0', 'items_count': n, 'total_items': n, 'limit': n, 'offset': n,
     #    'item_type': 'constituent', 'items': {...}}
     def _lgl_search(self, search_terms):
-        search_params = {'q': search_terms, 'access_token': LGL_API_TOKEN}
+        search_params = {'q': search_terms, 'access_token': self.lgl_api_token}
         log.debug('The search parameters are: "{}".'.format(search_params))
         response = requests.get(url=URL_SEARCH_CONSTITUENT, params=search_params)
         data = response.json()

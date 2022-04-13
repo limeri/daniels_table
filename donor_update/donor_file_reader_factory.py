@@ -148,13 +148,23 @@ def test_get_file_reader_stripe():
         print('FAIL - The wrong item was returned: "{}"'.format(file_reader))
 
 
+# Test getting the Quickbooks file reader class successfully.
+def test_get_file_reader_quickbooks():
+    file_reader = get_file_reader(file_path='sample_files\\quickbooks.xlsx')
+    if type(file_reader) == qb_reader.DonorFileReaderQuickbooks:
+        print('PASS - The Quickbooks File Reader was returned.')
+    else:
+        print('FAIL - The wrong item was returned: "{}"'.format(file_reader))
+
+
 if __name__ == '__main__':
     console_formatter = logging.Formatter('%(module)s.%(funcName)s - %(message)s')
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(console_formatter)
     log.addHandler(console_handler)
-    log.setLevel(logging.DEBUG)
+    log.setLevel(logging.INFO)
 
     test_get_file_reader_fidelity()
     test_get_file_reader_benevity()
     test_get_file_reader_stripe()
+    test_get_file_reader_quickbooks()
