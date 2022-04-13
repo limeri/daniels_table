@@ -11,6 +11,7 @@ from datetime import datetime
 import column_constants as cc
 import donor_file_reader_factory
 
+VERSION = "1"
 SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
 SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
 SAMPLE_FILE_STRIPE = 'sample_files\\stripe.xlsx'
@@ -180,6 +181,8 @@ def append_data(input_data, current_data):
 
 if __name__ == '__main__':
     setup_logger()
+    log.info("{} Version: {}".format(sys.argv[0], VERSION))
+
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
         usage()
