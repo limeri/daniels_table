@@ -53,6 +53,7 @@ def setup_logger():
 def usage():
     print('excel_etl -i <inputfile> -i <inputfile>, -o <outputfile')
     print('If -o is not specified, the output file will be "lgl.csv".')
+    print('\nFor --test, the args are "fid", "ben", "stripe", or "qb".  "--testall" runs everything.')
 
 
 # Get the input files and output file (if there is one) from the command line and translate the data.
@@ -61,25 +62,25 @@ def main(argv):
     output_file = ''
     # noinspection PyBroadException
     try:
-        opts, args = getopt.getopt(argv, 'hi:o:,', ['input_file=', 'output_file='])
+        opts, args = getopt.getopt(argv, 'hi:o:,', ['input_file=', 'output_file=', 'test=', 'testall'])
     except Exception:
         usage()
         sys.exit(2)
 
     for opt, arg in opts:
+        print("opt={}, arg={}".format(opt, arg))
         if opt in ('-h', '-?', '--help'):
             usage()
             sys.exit(0)
-        elif opt.lower() == '-t':
-            # sys.argv.append('test')
-            # sys.argv.append('-i')
-            # sys.argv.append(SAMPLE_FILE_FIDELITY)
-            # sys.argv.append('-i')
-            # sys.argv.append(SAMPLE_FILE_BENEVITY)
-            # sys.argv.append('-i')
-            # sys.argv.append(SAMPLE_FILE_STRIPE)
-            sys.argv.append('-i')
-            sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
+        elif opt.lower() in ['--test', '--testall']:
+            if opt == '--testall' or arg == 'fid':
+                input_files.append(SAMPLE_FILE_FIDELITY)
+            if opt == '--testall' or arg == 'ben':
+                input_files.append(SAMPLE_FILE_BENEVITY)
+            if opt == '--testall' or arg == 'stripe':
+                input_files.append(SAMPLE_FILE_STRIPE)
+            if opt == '--testall' or arg == 'qb':
+                input_files.append(SAMPLE_FILE_QUICKBOOKS)
         elif opt in ('-i', '--input_file'):
             input_files.append(arg)
         elif opt in ('-o', '--output_file'):
@@ -188,21 +189,21 @@ if __name__ == '__main__':
         usage()
         exit(0)
 
-    if len(sys.argv) == 2:
-        if sys.argv[1].lower() == '-test':
-            sys.argv.remove('-test')
-            # sys.argv.append('-i')
-            # sys.argv.append(SAMPLE_FILE_FIDELITY)
-            # sys.argv.append('-i')
-            # sys.argv.append(SAMPLE_FILE_BENEVITY)
-            # sys.argv.append('-i')
-            # sys.argv.append(SAMPLE_FILE_STRIPE)
-            sys.argv.append('-i')
-            sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
-        else:
-            log.error('The argument "{}" was not recognized.  Only "-test" can be used.'.format(str(sys.argv[1])))
-            usage()
-            exit(1)
+    # if len(sys.argv) == 2:
+    #     if sys.argv[1].lower() == '-test':
+    #         sys.argv.remove('-test')
+    #         sys.argv.append('-i')
+    #         sys.argv.append(SAMPLE_FILE_FIDELITY)
+    #         sys.argv.append('-i')
+    #         sys.argv.append(SAMPLE_FILE_BENEVITY)
+    #         sys.argv.append('-i')
+    #         sys.argv.append(SAMPLE_FILE_STRIPE)
+    #         sys.argv.append('-i')
+    #         sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
+    #     else:
+    #         log.error('The argument "{}" was not recognized.  Only "-test" can be used.'.format(str(sys.argv[1])))
+    #         usage()
+    #         exit(1)
 
     # If there are args, we expect a list of excel files.
     log.debug("There are {} args.".format(len(sys.argv)))
