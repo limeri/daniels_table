@@ -189,7 +189,7 @@ if __name__ == '__main__':
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
         usage()
-        exit(0)
+        sys.exit(0)
 
     # if len(sys.argv) == 2:
     #     if sys.argv[1].lower() == '-test':
