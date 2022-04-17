@@ -17,7 +17,7 @@ SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
 SAMPLE_FILE_STRIPE = 'sample_files\\stripe.xlsx'
 SAMPLE_FILE_QB = 'sample_files\\qb.xlsx'
 SAMPLE_FILE_QUICKBOOKS = 'sample_files\\quickbooks.xlsx'
-SAMPLE_FILE = SAMPLE_FILE_BENEVITY
+SAMPLE_FILE_YOURCAUSE = 'sample_files\\yourcause.csv'
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
@@ -81,6 +81,8 @@ def main(argv):
                 input_files.append(SAMPLE_FILE_STRIPE)
             if opt == '--testall' or arg == 'qb':
                 input_files.append(SAMPLE_FILE_QUICKBOOKS)
+            if opt == '--testall' or arg == 'yc':
+                input_files.append(SAMPLE_FILE_YOURCAUSE)
         elif opt in ('-i', '--input_file'):
             input_files.append(arg)
         elif opt in ('-o', '--output_file'):

@@ -38,6 +38,8 @@ class LglApi:
     # Returns - a dict containing the name information from LGL
     def find_constituent(self, name, email=None):
         log.debug('Entering with name: "{}"'.format(name))
+        if not name:
+            return {}
         # If the whole string is upper case, make it title case (first letter of every word is capital).
         if name.isupper():
             name = name.title()
@@ -82,7 +84,7 @@ class LglApi:
         if not file_name:
             file_name = 'Input File Unknown'
         data = self.find_constituent(name=name, email=email)
-        if data['items']:
+        if 'items' in data.keys() and data['items']:
             cid = data['items'][0]['id']
             log.debug('The constituent ID is {}.'.format(cid))
         else:
@@ -94,7 +96,7 @@ class LglApi:
 
     # This private method is a convenience method for _lgl_search.  It just adds "name=" to the search target.
     def _lgl_name_search(self, name):
-        if name == cc.EMPTY_CELL:
+        if not name or name == cc.EMPTY_CELL:
             return {}
         return self._lgl_search(search_terms='name=' + name)
 
