@@ -11,13 +11,18 @@ from datetime import datetime
 import column_constants as cc
 import donor_file_reader_factory
 
-VERSION = "1"
-SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
-SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
-SAMPLE_FILE_STRIPE = 'sample_files\\stripe.xlsx'
-SAMPLE_FILE_QB = 'sample_files\\qb.xlsx'
-SAMPLE_FILE_QUICKBOOKS = 'sample_files\\quickbooks.xlsx'
-SAMPLE_FILE_YOURCAUSE = 'sample_files\\yourcause.csv'
+SAMPLE_FILES = {
+    'ben': 'sample_files\\benevity.csv',
+    'fid': 'sample_files\\2022fidelity.xlsx',
+    'stripe': 'sample_files\\stripe.xlsx',
+    'qb':  'sample_files\\quickbooks.xlsx',
+    'yc': 'sample_files\\yourcause.csv',
+}
+VERSION = "1.1"
+# Version History:
+# 1 - initial release
+# 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
+#       final array.
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
@@ -52,8 +57,9 @@ def setup_logger():
 
 def usage():
     print('excel_etl -i <inputfile> -i <inputfile>, -o <outputfile')
+    print('Version {}'.format(VERSION))
     print('If -o is not specified, the output file will be "lgl.csv".')
-    print('\nFor --test, the args are "fid", "ben", "stripe", or "qb".  "--testall" runs everything.')
+    print('\nFor --test, the args are "fid", "ben", "stripe", "qb", or "yc".  "--testall" runs everything.')
 
 
 # Get the input files and output file (if there is one) from the command line and translate the data.
@@ -72,17 +78,16 @@ def main(argv):
         if opt in ('-h', '-?', '--help'):
             usage()
             sys.exit(0)
-        elif opt.lower() in ['--test', '--testall']:
-            if opt == '--testall' or arg == 'fid':
-                input_files.append(SAMPLE_FILE_FIDELITY)
-            if opt == '--testall' or arg == 'ben':
-                input_files.append(SAMPLE_FILE_BENEVITY)
-            if opt == '--testall' or arg == 'stripe':
-                input_files.append(SAMPLE_FILE_STRIPE)
-            if opt == '--testall' or arg == 'qb':
-                input_files.append(SAMPLE_FILE_QUICKBOOKS)
-            if opt == '--testall' or arg == 'yc':
-                input_files.append(SAMPLE_FILE_YOURCAUSE)
+        elif opt.lower() == '--test':
+            if arg not in SAMPLE_FILES:
+                print('The argument "{}" is not a valid test arg.  Valid args are: "{}".'.
+                      format(arg, ','.join(SAMPLE_FILES.keys())))
+                exit(1)
+            print('Running test for "{}".'.format(SAMPLE_FILES[arg]))
+            input_files.append(SAMPLE_FILES[arg])
+        elif opt.lower() == '--testall':
+            input_files = input_files + list(SAMPLE_FILES.values())
+            print('Input files = "{}".'.format(', '.join(input_files)))
         elif opt in ('-i', '--input_file'):
             input_files.append(arg)
         elif opt in ('-o', '--output_file'):
@@ -163,23 +168,54 @@ def append_data(input_data, current_data):
 
     # Append the data from the input_data to the final_data.  For each new label in input_data, populate the
     # existing inner dicts with empty values.
-    first_current_label = next(iter(current_data))  # Get the first label from current_data
-    value_count = len(current_data[first_current_label].keys())
+    current_count = _get_data_len(data=current_data)
+    input_count = _get_data_len(data=input_data)
+    total_count = current_count + input_count
+
     current_labels = current_data.keys()
     input_labels = input_data.keys()
+    # Make dicts of empty values that are the length of the current data and the input data.
+    current_extra_keys = list(range(0, current_count))
+    current_empty_data = {}.fromkeys(current_extra_keys, '')
+    input_extra_keys = list(range(current_count, current_count + input_count))
+    input_empty_data = {}.fromkeys(input_extra_keys, '')
+
     for input_label in input_labels:
         if input_label not in current_labels:
             # Got a new label, so populate existing rows with blanks.
             final_data[input_label] = {}
-            for index in range(value_count):
-                final_data[input_label][index] = ''
+            final_data[input_label].update(current_empty_data)
+
         # Append the input_data to final_data.  Remember that we're extending the inner dict, not a list.
-        new_index = value_count
+        new_index = current_count
         input_data_keys = input_data[input_label]
         for input_data_key in input_data_keys:
             final_data[input_label][new_index] = input_data[input_label][input_data_key]
             new_index += 1
+
+    # Make sure any labels in the final dict, but not in the input dict, have the correct number of values.
+    for label in final_data.keys():
+        value_count = len(final_data[label].keys())
+        if value_count != total_count:
+            final_data[label].update(input_empty_data)
     return final_data
+
+
+# ----- P R I V A T E   M E T H O D S ----- #
+
+# This private method will find the length of a set of input data.  The input data is expected to be in the format:
+#
+#   {'label1': {0: 'l1value0', 1: 'l1value1', ...},
+#    'label2': {0: 'l2value0', 1: 'l2value1', ...},
+#    ...}
+#
+# Args - data - the input_data as defined above
+#
+# Returns - the length of the data
+def _get_data_len(data):
+    first_label = next(iter(data))  # Get the first label from data
+    data_count = len(data[first_label].keys())  # Number of values in data
+    return data_count
 
 
 if __name__ == '__main__':
@@ -190,22 +226,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         usage()
         sys.exit(0)
-
-    # if len(sys.argv) == 2:
-    #     if sys.argv[1].lower() == '-test':
-    #         sys.argv.remove('-test')
-    #         sys.argv.append('-i')
-    #         sys.argv.append(SAMPLE_FILE_FIDELITY)
-    #         sys.argv.append('-i')
-    #         sys.argv.append(SAMPLE_FILE_BENEVITY)
-    #         sys.argv.append('-i')
-    #         sys.argv.append(SAMPLE_FILE_STRIPE)
-    #         sys.argv.append('-i')
-    #         sys.argv.append(SAMPLE_FILE_QUICKBOOKS)
-    #     else:
-    #         log.error('The argument "{}" was not recognized.  Only "-test" can be used.'.format(str(sys.argv[1])))
-    #         usage()
-    #         exit(1)
 
     # If there are args, we expect a list of excel files.
     log.debug("There are {} args.".format(len(sys.argv)))
