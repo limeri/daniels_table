@@ -56,7 +56,7 @@ def setup_logger():
 
 
 def usage():
-    print('excel_etl -i <inputfile> -i <inputfile>, -o <outputfile')
+    print('donor_etl -i <inputfile> -i <inputfile>, -o <outputfile>')
     print('Version {}'.format(VERSION))
     print('If -o is not specified, the output file will be "lgl.csv".')
     print('\nFor --test, the args are "fid", "ben", "stripe", "qb", or "yc".  "--testall" runs everything.')
