@@ -171,6 +171,16 @@ class LglApi:
 
     # This private method is a generic error handler for calls to LGL.  It will document the error and stop
     # the program if necessary.
+    #
+    # Args -
+    #   error_code - the error code from the REST API call
+    #   url - the URL from the REST API call
+    #   params - (opt) the parameters from the REST API call
+    #   fatal - (opt) True will exit the program, False (default) will let the program continue
+    #   fatal_error_msg - (opt) an additional message to be logged in the event of a fatal error.
+    #       This message would ideally give a better explanation of the problem and must tell the user what
+    #       to do next.  It defaults to telling the user to call Sandra Montesino, who will hopefully know
+    #       who to ask to look into the problem.
     def _handle_error(self, error_code, url, params=None, fatal=False, fatal_error_msg=None):
         error_msg = 'The error code {} occurred for the URL "{}"'.format(error_code, url)
         if params:
