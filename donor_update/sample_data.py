@@ -17,11 +17,31 @@ INPUT_FILES = {
 }
 
 ID_LIMERI = '956522'
+ID_ALI = '956957'
+ID_COLE = '959732'
+
 ADDRESS_LIMERI = {
-    cc.LGL_ADDRESS_LINE_1: '29 Dartmouth Dr. ',
+    cc.LGL_ADDRESS_LINE_1: '29 Dartmouth Dr.',
     cc.LGL_ADDRESS_LINE_2: '',
     cc.LGL_ADDRESS_LINE_3: '',
     cc.LGL_CITY: 'Framingham',
     cc.LGL_STATE: 'MA',
     cc.LGL_POSTAL_CODE: '01701',
+}
+ADDRESS_ALI = {
+    cc.LGL_ADDRESS_LINE_1: '16 Saint Germain Street, Apt 7,',
+    cc.LGL_ADDRESS_LINE_2: '',
+    cc.LGL_ADDRESS_LINE_3: '',
+    cc.LGL_CITY: 'Boston',
+    cc.LGL_STATE: 'MA',
+    cc.LGL_POSTAL_CODE: '02115',
+}
+
+ADDRESS_COLE = {
+    cc.LGL_ADDRESS_LINE_1: 'PO Box 198',
+    cc.LGL_ADDRESS_LINE_2: '',
+    cc.LGL_ADDRESS_LINE_3: '',
+    cc.LGL_CITY: 'Sperryville',
+    cc.LGL_STATE: 'VA',
+    cc.LGL_POSTAL_CODE: '22740',
 }
