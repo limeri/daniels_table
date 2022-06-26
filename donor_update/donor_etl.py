@@ -10,14 +10,8 @@ from datetime import datetime
 
 import column_constants as cc
 import donor_file_reader_factory
+import sample_data as sample
 
-SAMPLE_FILES = {
-    'ben': 'sample_files\\benevity.csv',
-    'fid': 'sample_files\\2022fidelity.xlsx',
-    'stripe': 'sample_files\\stripe.xlsx',
-    'qb':  'sample_files\\quickbooks.xlsx',
-    'yc': 'sample_files\\yourcause.csv',
-}
 VERSION = "1.1"
 # Version History:
 # 1 - initial release
@@ -79,14 +73,14 @@ def main(argv):
             usage()
             sys.exit(0)
         elif opt.lower() == '--test':
-            if arg not in SAMPLE_FILES:
+            if arg not in sample.INPUT_FILES:
                 print('The argument "{}" is not a valid test arg.  Valid args are: "{}".'.
-                      format(arg, ','.join(SAMPLE_FILES.keys())))
+                      format(arg, ', '.join(sample.INPUT_FILES.keys())))
                 exit(1)
-            print('Running test for "{}".'.format(SAMPLE_FILES[arg]))
-            input_files.append(SAMPLE_FILES[arg])
+            print('Running test for "{}".'.format(sample.INPUT_FILES[arg]))
+            input_files.append(sample.INPUT_FILES[arg])
         elif opt.lower() == '--testall':
-            input_files = input_files + list(SAMPLE_FILES.values())
+            input_files = input_files + list(sample.INPUT_FILES.values())
             print('Input files = "{}".'.format(', '.join(input_files)))
         elif opt in ('-i', '--input_file'):
             input_files.append(arg)

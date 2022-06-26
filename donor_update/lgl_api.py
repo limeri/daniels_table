@@ -14,6 +14,7 @@ import re
 import sys
 
 import requests
+import sample_data as sample
 
 from configparser import ConfigParser
 
@@ -21,8 +22,6 @@ import column_constants as cc
 
 URL_SEARCH_CONSTITUENT = 'https://api.littlegreenlight.com/api/v1/constituents/search'
 URL_CONSTITUENT_DETAILS = 'https://api.littlegreenlight.com/api/v1/constituents/'
-
-LIMERI_ID = '956522'
 
 log = logging.getLogger()
 
@@ -209,9 +208,9 @@ def run_find_constituent_test():
         {'name': 'Kurt Fusaris', 'email': 'kfusaris@gmail.com'},
     ]
     for search_term in search_values:
-        print('~~~~~')
+        log.debug('~~~~~')
         data = lgl.find_constituent(name=search_term['name'], email=search_term['email'])
-        print('The response for "{}" is:\n{}'.format(search_term, data))
+        log.debug('The response for "{}" is:\n{}'.format(search_term, data))
         time.sleep(1)
 
 
@@ -219,15 +218,15 @@ def run_find_constituent_test():
 def run_find_constituent_id_by_name_test():
     lgl = LglApi()
     cid = lgl.find_constituent_id(name="Carolyn and Andy Limeri")
-    print("The ID is: {}".format(cid))
+    log.debug("The ID is: {}".format(cid))
 
 
 # Test that the get_constituent_info method is working.
 def run_get_constituent_info_test():
     lgl = LglApi()
-    test_id = LIMERI_ID
+    test_id = sample.ID_LIMERI
     data = lgl.get_constituent_info(constituent_id=test_id)
-    print('The data for {} is:\n{}'.format(test_id, data.__repr__()))
+    log.debug('The data for {} is:\n{}'.format(test_id, data.__repr__()))
 
 
 if __name__ == '__main__':
@@ -238,7 +237,7 @@ if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
 
     run_find_constituent_test()
-    print('-----')
+    log.debug('-----')
     run_find_constituent_id_by_name_test()
-    print('-----')
+    log.debug('-----')
     run_get_constituent_info_test()
