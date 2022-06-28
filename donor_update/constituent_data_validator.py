@@ -70,13 +70,15 @@ class ConstituentDataValidator:
 
         # Convert various road abbreviations.  Found this online.  It's quite clever.
         # https://stackoverflow.com/questions/6116978/how-to-replace-multiple-substrings-of-a-string
-        road_translations = {'st': 'street', 'dr': 'drive', 'rd': 'road', 'la': 'lane',
-                             'cir': 'circle', 'ave': 'avenue', 'blvd': 'boulevard'}
+        road_translations = {'street': 'st', 'drive': 'dr', 'road': 'rd', 'lane': 'la',
+                             'circle': 'cir', 'avenue': 'ave', 'boulevard': 'blvd',
+                             'terrace': 'ter', 'court': 'ct'}
         road_translations = dict((re.escape(k), v) for k, v in road_translations.items())
         pattern = re.compile(r'\b' + r'\b|\b'.join(road_translations.keys()) + r'\b')
         street = pattern.sub(lambda m: road_translations[re.escape(m.group(0))], street)
+
         street = street.title()
-        street = re.sub(r'\bPo\b', 'PO', street)
+        street = re.sub(r'\bPo Box\b', 'PO Box', street)  # Capitalize PO for PO Box.
         return street
 
     # This private method will make a call to get constituent detail data from LGL.  If the data
@@ -99,6 +101,7 @@ class ConstituentDataValidator:
 
 
 def run_normalize_street_name_test():
+    log.debug('\n-----')
     cdv = ConstituentDataValidator()
     limeri_street = cdv._normalize_street_name(sample.ADDRESS_LIMERI[cc.LGL_ADDRESS_LINE_1])
     log.debug('Limeri address: "{}"'.format(limeri_street))
@@ -106,6 +109,14 @@ def run_normalize_street_name_test():
     log.debug('Cole address: "{}"'.format(cole_street))
     ali_street = cdv._normalize_street_name(sample.ADDRESS_ALI[cc.LGL_ADDRESS_LINE_1])
     log.debug('Ali address: "{}"'.format(ali_street))
+
+
+def run_get_constituent_data_test():
+    log.debug('\n-----')
+    cdv = ConstituentDataValidator()
+    lgl_data = cdv._get_constituent_data(constituent_id=sample.ID_LIMERI)
+    log.debug('Limeri Data is:\n{}'.format(lgl_data.__repr__()))
+
 
 if __name__ == '__main__':
     console_formatter = logging.Formatter('%(module)s.%(funcName)s - %(message)s')
@@ -115,3 +126,4 @@ if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
 
     run_normalize_street_name_test()
+    run_get_constituent_data_test()
