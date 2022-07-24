@@ -5,8 +5,15 @@ IGNORE_FIELD = '***** IGNORE THIS FIELD *****'
 DO_NOT_IMPORT = 'DO NOT IMPORT - '
 EMPTY_CELL = 'nan'
 
-# LGL Fields -- Some of the fields will not be imported when donations are imported.  They have an additional _DNI
-# constant that is used by the maps.
+# LGL API fields -- these are key names that you get back when you make an API call to get client details.
+LGL_API_ADDRESS_KEY = 'street_addresses'
+LGL_API_STREET = 'street'
+LGL_API_CITY = 'city'
+LGL_API_STATE = 'state'
+LGL_API_POSTAL_CODE = 'postal_code'
+
+# LGL Dictonary Fields -- Some of the fields will not be imported when donations are imported.  They have an
+# additional _DNI constant that is used by the maps.
 LGL_CONSTITUENT_ID = 'LGL Constituent ID'
 LGL_FULL_NAME = 'Full Name'
 LGL_FULL_NAME_DNI = DO_NOT_IMPORT + LGL_FULL_NAME

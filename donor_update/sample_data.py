@@ -28,9 +28,19 @@ ADDRESS_LIMERI = {
     cc.LGL_STATE: 'MA',
     cc.LGL_POSTAL_CODE: '01701',
 }
-ADDRESS_ALI = {
+
+ADDRESS_ALI_1 = {
     cc.LGL_ADDRESS_LINE_1: '16 Saint Germain Street, Apt 7,',
     cc.LGL_ADDRESS_LINE_2: '',
+    cc.LGL_ADDRESS_LINE_3: '',
+    cc.LGL_CITY: 'Boston',
+    cc.LGL_STATE: 'MA',
+    cc.LGL_POSTAL_CODE: '02115',
+}
+
+ADDRESS_ALI_2 = {
+    cc.LGL_ADDRESS_LINE_1: '16 Saint Germain Street',
+    cc.LGL_ADDRESS_LINE_2: 'Apt 7',
     cc.LGL_ADDRESS_LINE_3: '',
     cc.LGL_CITY: 'Boston',
     cc.LGL_STATE: 'MA',
@@ -42,6 +52,24 @@ ADDRESS_COLE = {
     cc.LGL_ADDRESS_LINE_2: '',
     cc.LGL_ADDRESS_LINE_3: '',
     cc.LGL_CITY: 'Sperryville',
+    cc.LGL_STATE: 'VA',
+    cc.LGL_POSTAL_CODE: '22740',
+}
+
+ADDRESS_LIMERI_BAD = {
+    cc.LGL_ADDRESS_LINE_1: '29 Cartmouth Dr.',
+    cc.LGL_ADDRESS_LINE_2: '',
+    cc.LGL_ADDRESS_LINE_3: '',
+    cc.LGL_CITY: 'Framingham',
+    cc.LGL_STATE: 'MA',
+    cc.LGL_POSTAL_CODE: '01702',
+}
+
+ADDRESS_COLE_BAD = {
+    cc.LGL_ADDRESS_LINE_1: 'PO Box 199',
+    cc.LGL_ADDRESS_LINE_2: '',
+    cc.LGL_ADDRESS_LINE_3: '',
+    cc.LGL_CITY: 'Sperryvill',
     cc.LGL_STATE: 'VA',
     cc.LGL_POSTAL_CODE: '22740',
 }
