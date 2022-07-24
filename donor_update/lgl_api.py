@@ -126,7 +126,7 @@ class LglApi:
     #    'can_change': True, 'can_select': True, 'created_at': '2019-06-18T15:50:34Z',
     #    'updated_at': '2019-06-18T15:50:34Z'}]}], 'groups': [], 'memberships': [], 'custom_attrs': []}
     def get_constituent_info(self, constituent_id):
-        id_url = URL_CONSTITUENT_DETAILS + constituent_id
+        id_url = URL_CONSTITUENT_DETAILS + str(constituent_id)
         url_params = {'access_token': self.lgl_api_token}
         log.debug('The URL is "{}" and the parameters are: "{}".'.format(id_url, url_params))
         response = requests.get(url=id_url, params=url_params)

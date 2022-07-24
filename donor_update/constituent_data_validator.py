@@ -51,9 +51,12 @@ class ConstituentDataValidator:
     #                   comments for the format.
     #   Address lines 2 and 3 may be None.  All other keys should have a value.
     #
-    # Returns - none
+    # Returns - true if address validated, false if there was an error
     # Side Effects - a file is created containing any variances that are found
     def validate_address_data(self, constituent_id, input_address, variance_file):
+        log.debug('Entering with id: {}, input_address: {}, variance file: {}'.
+                  format(constituent_id, input_address.__repr__(), variance_file))
+        success = True
         formatted_input_address = self._reformat_address(address_info=input_address)
         lgl_data = self._get_constituent_data(constituent_id=constituent_id)
         if cc.LGL_API_ADDRESS_KEY not in lgl_data:
@@ -83,6 +86,8 @@ class ConstituentDataValidator:
         if error_info:
             log.debug('Variances were found:\n{}'.format(error_info))
             self._log_bad_addresses(error_info=error_info, variance_file=variance_file)
+            success = False
+        return success
 
     # ----- P R I V A T E   M E T H O D S ----- #
 
@@ -95,6 +100,7 @@ class ConstituentDataValidator:
     # Returns - the address reformatted so it looks like an LGL address
     #       The format of the returned data will be the same as the address_info
     def _reformat_address(self, address_info):
+        log.debug('Entering')
         output_address = self._initialize_output_address_data()
 
         address_line_1 = self._normalize_street_name(address_info[cc.LGL_ADDRESS_LINE_1])
@@ -116,6 +122,7 @@ class ConstituentDataValidator:
     #
     # Returns - the normalized street name
     def _normalize_street_name(self, street):
+        log.debug('Entering with "{}".'.format(street))
         if not street:
             return ''
 
@@ -144,6 +151,7 @@ class ConstituentDataValidator:
     # Returns - the constituent data from the call
     # Side Effects - if a call is made, the class variables are updated
     def _get_constituent_data(self, constituent_id):
+        log.debug('Entering for ID {}.'.format(constituent_id))
         if constituent_id == self._constituent_id:
             return self._constituent_data
         # Make the call and save the data.
@@ -161,6 +169,7 @@ class ConstituentDataValidator:
     #       {'lgl_id': <lgl_id>, 'lgl_address': <lgl address data>, 'input_address': <input file address data>}
     #   variance_file - file to which to write the data
     def _log_bad_addresses(self, error_info, variance_file):
+        log.debug('Entering')
         variance_file_exists = os.path.exists(variance_file)
         output_file = open(variance_file, 'a')
         if not variance_file_exists or (os.path.getsize(variance_file) == 0):
@@ -184,6 +193,7 @@ class ConstituentDataValidator:
 
     # This private method will return a dict with the address keys initialized to nothing.
     def _initialize_output_address_data(self):
+        log.debug('Entering')
         output_address = {
             cc.LGL_API_STREET: '',
             cc.LGL_API_CITY: '',

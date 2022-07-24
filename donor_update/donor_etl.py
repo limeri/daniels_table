@@ -56,13 +56,17 @@ def usage():
     print('\nFor --test, the args are "fid", "ben", "stripe", "qb", or "yc".  "--testall" runs everything.')
 
 
-# Get the input files and output file (if there is one) from the command line and translate the data.
+# Get the input files, output file (if there is one), and variance_file (if there is one) from the command line
+# and translate the data.
 def main(argv):
     input_files = []
     output_file = ''
+    variance_file = ''
     # noinspection PyBroadException
     try:
-        opts, args = getopt.getopt(argv, 'hi:o:,', ['input_file=', 'output_file=', 'test=', 'testall'])
+        opts, args = getopt.getopt(argv,
+                                   'hi:o:v:,',
+                                   ['input_file=', 'output_file=', 'variance_file=', 'test=', 'testall'])
     except Exception:
         usage()
         sys.exit(2)
@@ -86,6 +90,8 @@ def main(argv):
             input_files.append(arg)
         elif opt in ('-o', '--output_file'):
             output_file = arg
+        elif opt in ('-v', '--variance_file'):
+            variance_file = arg
 
     # Default the output file to "lgl.csv" if it wasn't specified.
     if not output_file:
@@ -93,7 +99,7 @@ def main(argv):
 
     log.debug('The input files are "{}".'.format(input_files))
     log.info('The output file is "{}".'.format(output_file))
-    reformat_data(input_files=input_files, output_file=output_file)
+    reformat_data(input_files=input_files, output_file=output_file, variance_file=variance_file)
 
 
 # This function manages the reformatting process for the data.  It does this by looping through each input file,
@@ -102,12 +108,13 @@ def main(argv):
 #
 # Returns - none
 # Side Effects - The output file is created and populated.
-def reformat_data(input_files, output_file):
+def reformat_data(input_files, output_file, variance_file):
     final_output = {}
     for input_file in input_files:
         # Write a divider line to the log file so it's easy to distinguish files.
         try:
             donor_file_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
+            donor_file_reader.variance_file = variance_file
         except ValueError:
             log.info('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.format(input_file))
             continue
@@ -133,6 +140,8 @@ def reformat_data(input_files, output_file):
     output_df = pandas.DataFrame(final_output)
     output_file = open(output_file, 'w')
     output_file.write(output_df.to_csv(index=False, line_terminator='\n'))
+    # Match the addresses in the input files to what's in LGL.
+    donor_file_reader.check_address(donor_info=final_output)
 
 
 # This function will append the data from the last file read to the existing output data.  Both the input and current

@@ -2,9 +2,11 @@
 #
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
-import column_constants as cc
 import logging
 import os
+
+import column_constants as cc
+import constituent_data_validator as cdv_module
 
 SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
 SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
@@ -31,6 +33,7 @@ class DonorFileReader:
         self._input_data = {}
         self.donor_data = {}
         self.input_file = 'Input File Not Known'
+        self.variance_file = ''
 
     @property
     def input_data(self):
@@ -89,6 +92,47 @@ class DonorFileReader:
         id_list = self.get_lgl_constituent_ids()
         output_data[cc.LGL_CONSTITUENT_ID] = id_list
         return output_data
+
+    # This method will call the address verification method for all the donors in the input files.
+    #
+    # Args -
+    #   donor_info - the output from map_fields (from all of the input files)
+    #
+    # Returns - none
+    # Side effects - see the ConstituentDataValidator class
+    def check_address(self, donor_info):
+        log.debug('Entering')
+        if not self.variance_file:
+            return
+        lgl_ids = donor_info[cc.LGL_CONSTITUENT_ID]
+        address_1 = donor_info[cc.LGL_ADDRESS_LINE_1_DNI]
+        address_2 = donor_info[cc.LGL_ADDRESS_LINE_2_DNI]
+        address_3 = donor_info[cc.LGL_ADDRESS_LINE_3_DNI]
+        city = donor_info[cc.LGL_CITY_DNI]
+        state = donor_info[cc.LGL_STATE_DNI]
+        postal_code = donor_info[cc.LGL_POSTAL_CODE_DNI]
+        variance_count= 0
+        for index in lgl_ids.keys():
+            if not lgl_ids[index]:  # Skip this row if no LGL ID is found.
+                continue
+            input_data = dict()
+            input_data[cc.LGL_ADDRESS_LINE_1] = address_1[index]
+            input_data[cc.LGL_ADDRESS_LINE_2] = address_2[index]
+            input_data[cc.LGL_ADDRESS_LINE_3] = address_3[index]
+            input_data[cc.LGL_CITY] = city[index]
+            input_data[cc.LGL_STATE] = state[index]
+            input_data[cc.LGL_POSTAL_CODE] = str(postal_code[index])
+            cdv = cdv_module.ConstituentDataValidator()
+            success = cdv.validate_address_data(constituent_id=lgl_ids[index],
+                                                input_address=input_data,
+                                                variance_file=self.variance_file)
+            if not success:
+                variance_count += 1
+        if variance_count > 0:
+            log.info('There were {} variance(s) in the addresses.  Please look at the file "{}" for the variances.'.
+                     format(variance_count, self.variance_file))
+        else:
+            log.info('No variances were found in the addresses.')
 
 
 # This is a test function for map_fields and to see what the data looks like.
