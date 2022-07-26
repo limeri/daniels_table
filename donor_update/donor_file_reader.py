@@ -107,15 +107,19 @@ class DonorFileReader:
             return
         lgl_ids = donor_info[cc.LGL_CONSTITUENT_ID]
         address_1 = donor_info[cc.LGL_ADDRESS_LINE_1_DNI]
-        address_2 = donor_info[cc.LGL_ADDRESS_LINE_2_DNI]
-        address_3 = donor_info[cc.LGL_ADDRESS_LINE_3_DNI]
+        if cc.LGL_ADDRESS_LINE_2_DNI in donor_info:
+            address_2 = donor_info[cc.LGL_ADDRESS_LINE_2_DNI]
+            address_3 = donor_info[cc.LGL_ADDRESS_LINE_3_DNI]
+        else:
+            address_2 = dict.fromkeys(lgl_ids.keys(), '')  # Create a dict with the same keys and empty values
+            address_3 = dict.fromkeys(lgl_ids.keys(), '')
         city = donor_info[cc.LGL_CITY_DNI]
         state = donor_info[cc.LGL_STATE_DNI]
         postal_code = donor_info[cc.LGL_POSTAL_CODE_DNI]
         if cc.LGL_EMAIL_ADDRESS_DNI in donor_info.keys():
             email = donor_info[cc.LGL_EMAIL_ADDRESS_DNI]
         else:
-            email = dict.fromkeys(lgl_ids.keys(), '')  # Create a dict with the same keys and empty values
+            email = dict.fromkeys(lgl_ids.keys(), '')
         variance_count = 0
         for index in lgl_ids.keys():
             if not lgl_ids[index]:  # Skip this row if no LGL ID is found.

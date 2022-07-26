@@ -12,11 +12,12 @@ import column_constants as cc
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "1.1"
+VERSION = "2"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
 #       final array.
+# 2 - Added physical and email checks between input files and LGL.
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()

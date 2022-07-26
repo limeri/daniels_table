@@ -58,44 +58,26 @@ class ConstituentDataValidator:
     def validate_address_data(self, constituent_id, input_address, variance_file):
         log.debug('Entering with id: {}, input_address: {}, variance file: {}'.
                   format(constituent_id, input_address.__repr__(), variance_file))
-        success = True
-        formatted_input_address = self._reformat_address(address_info=input_address)
-        if formatted_input_address[cc.LGL_API_STREET] in ('', 'Not shared by donor'):
-            log.debug('The address was not shared by the donor.')
-            return success
         lgl_data = self._get_constituent_data(constituent_id=constituent_id)
-        variance = []
+        variance = self._check_address(lgl_data=lgl_data, input_address=input_address)
+        variance += (self._check_email(lgl_data=lgl_data, input_address=input_address))
+
+        # The next five lines are dupped from the _check... private methods for the sake of simplicity.
         if (cc.LGL_API_ADDRESS not in lgl_data) or (len(lgl_data[cc.LGL_API_ADDRESS]) == 0):
-            # If the input data doesn't have anything, then just return successful.  Otherwise, record the
-            # variance.
-            if not formatted_input_address[cc.LGL_API_STREET]:
-                return success
-            variance.append('No street addresses were found in LGL')
+            lgl_address = self._initialize_output_address_data()
         else:
             lgl_address = lgl_data[cc.LGL_API_ADDRESS][0]
-            lgl_emails = ([email['address'] for email in lgl_data[cc.LGL_API_EMAIL] if 'address' in email])
-            if formatted_input_address[cc.LGL_API_STREET] != lgl_address[cc.LGL_API_STREET]:
-                variance.append('Street address information does not match')
-            if formatted_input_address[cc.LGL_API_CITY].lower() != lgl_address[cc.LGL_API_CITY].lower():
-                variance.append('City does not match')
-            if formatted_input_address[cc.LGL_API_STATE].upper() != lgl_address[cc.LGL_API_STATE].upper():
-                variance.append('State does not match')
-            if formatted_input_address[cc.LGL_API_POSTAL_CODE] not in lgl_address[cc.LGL_API_POSTAL_CODE]:
-                variance.append('Postal code does not match')
-            if formatted_input_address[cc.LGL_API_EMAIL] and \
-                    formatted_input_address[cc.LGL_API_EMAIL] not in lgl_emails:
-                variance.append('Email address does not match')
-        error_info = {}
+        lgl_emails = ([email['address'] for email in lgl_data[cc.LGL_API_EMAIL] if 'address' in email])
+        success = True
         if variance:
             error_info = {
                 'lgl_id': lgl_data['id'],
                 'lgl_address': lgl_address,
                 'lgl_email': '"' + ', '.join(lgl_emails) + '"',
                 'input_address': input_address,
-                'input_email': formatted_input_address[cc.LGL_API_EMAIL],
+                'input_email': input_address[cc.LGL_EMAIL_ADDRESS],
                 'reason': '"' + ', '.join(variance) + '"'
             }
-        if error_info:
             log.debug('Variances were found:\n{}'.format(error_info))
             self._log_bad_addresses(error_info=error_info, variance_file=variance_file)
             success = False
@@ -115,9 +97,9 @@ class ConstituentDataValidator:
         log.debug('Entering')
         output_address = self._initialize_output_address_data()
 
-        address_line_1 = self._normalize_street_name(address_info[cc.LGL_ADDRESS_LINE_1])
-        address_line_2 = self._normalize_street_name(address_info[cc.LGL_ADDRESS_LINE_2])
-        address_line_3 = self._normalize_street_name(address_info[cc.LGL_ADDRESS_LINE_3])
+        address_line_1 = self._normalize_street_name(address_info[cc.LGL_ADDRESS_LINE_1]).strip()
+        address_line_2 = self._normalize_street_name(address_info[cc.LGL_ADDRESS_LINE_2]).strip()
+        address_line_3 = self._normalize_street_name(address_info[cc.LGL_ADDRESS_LINE_3]).strip()
 
         output_address[cc.LGL_API_STREET] = address_line_1 + ' ' + address_line_2 + ' ' + address_line_3
         output_address[cc.LGL_API_STREET] = output_address[cc.LGL_API_STREET].strip()  # in case address_2/3 are empty
@@ -154,6 +136,54 @@ class ConstituentDataValidator:
         street = street.title()
         street = re.sub(r'\bPo Box\b', 'PO Box', street)  # Capitalize PO for PO Box.
         return street
+
+    # This private method will test that the physical address from the input file matches what is in LGL.
+    #
+    # Args -
+    #   lgl_data - the data retrieved from the LGL
+    #   input_address - the data from the input file
+    #
+    # Returns - a list of any variances that occurred.  An empty list if there are no variances.
+    def _check_address(self, lgl_data, input_address):
+        log.debug('Entering')
+        formatted_input_address = self._reformat_address(address_info=input_address)
+        variance = []
+        if formatted_input_address[cc.LGL_API_STREET].lower() in ('', 'not shared by donor'):
+            log.debug('The address was not shared by the donor.')
+            return variance
+        if (cc.LGL_API_ADDRESS not in lgl_data) or (len(lgl_data[cc.LGL_API_ADDRESS]) == 0):
+            # If the input data doesn't have anything, then just return successful.  Otherwise, record the
+            # variance.
+            if not formatted_input_address[cc.LGL_API_STREET]:
+                return variance
+            variance.append('No street addresses were found in LGL')
+        else:
+            lgl_address = lgl_data[cc.LGL_API_ADDRESS][0]
+            if formatted_input_address[cc.LGL_API_STREET] != lgl_address[cc.LGL_API_STREET]:
+                variance.append('Street address information does not match')
+            if formatted_input_address[cc.LGL_API_CITY].lower() != lgl_address[cc.LGL_API_CITY].lower():
+                variance.append('City does not match')
+            if formatted_input_address[cc.LGL_API_STATE].upper() != lgl_address[cc.LGL_API_STATE].upper():
+                variance.append('State does not match')
+            if formatted_input_address[cc.LGL_API_POSTAL_CODE] not in lgl_address[cc.LGL_API_POSTAL_CODE]:
+                variance.append('Postal code does not match')
+        return variance
+
+    # This private method will test that the email address from the input file matches what is in LGL.
+    #
+    # Args -
+    #   lgl_data - the data retrieved from the LGL
+    #   input_address - the data from the input file
+    #
+    # Returns - a list of any variances that occurred.  An empty list if there are no variances.
+    def _check_email(self, lgl_data, input_address):
+        log.debug('Entering')
+        variance = []
+        lgl_emails = ([email['address'].lower() for email in lgl_data[cc.LGL_API_EMAIL] if 'address' in email])
+        if input_address[cc.LGL_EMAIL_ADDRESS] and \
+                input_address[cc.LGL_EMAIL_ADDRESS].lower() not in lgl_emails:
+            variance.append('Email address does not match')
+        return variance
 
     # This private method will make a call to get constituent detail data from LGL.  If the data
     # has already been retrieved, then it simply returns what it already knows.
@@ -218,7 +248,8 @@ class ConstituentDataValidator:
             cc.LGL_API_STREET: '',
             cc.LGL_API_CITY: '',
             cc.LGL_API_STATE: '',
-            cc.LGL_API_POSTAL_CODE: ''
+            cc.LGL_API_POSTAL_CODE: '',
+            cc.LGL_API_EMAIL: ''
         }
         return output_address
 
