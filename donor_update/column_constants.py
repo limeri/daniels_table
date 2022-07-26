@@ -6,11 +6,12 @@ DO_NOT_IMPORT = 'DO NOT IMPORT - '
 EMPTY_CELL = 'nan'
 
 # LGL API fields -- these are key names that you get back when you make an API call to get client details.
-LGL_API_ADDRESS_KEY = 'street_addresses'
+LGL_API_ADDRESS = 'street_addresses'
 LGL_API_STREET = 'street'
 LGL_API_CITY = 'city'
 LGL_API_STATE = 'state'
 LGL_API_POSTAL_CODE = 'postal_code'
+LGL_API_EMAIL = 'email_addresses'
 
 # LGL Dictonary Fields -- Some of the fields will not be imported when donations are imported.  They have an
 # additional _DNI constant that is used by the maps.

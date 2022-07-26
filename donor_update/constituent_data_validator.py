@@ -22,14 +22,16 @@ log = logging.getLogger()
 #           LGL_ADDRESS_LINE_3: 'address line 3',
 #           LGL_CITY: 'city name',
 #           LGL_STATE: 'state abbreviation',
-#           LGL_POSTAL_CODE: 'zip code'
+#           LGL_POSTAL_CODE: 'zip code',
+#           LGL_EMAIL_ADDRESS: 'email address'
 #       }
 #
 # The output format is (based on LGL) is:
 #       {   'street': 'street address',
 #           'city': 'city/town name',
 #           'state': 'state abbreviation',
-#           'postal_code': 'zip code'
+#           'postal_code': 'zip code',
+#           'email': 'email address'
 #       }
 #
 # Note that the zip code returned from LGL will be nine digits.  The input zip code will likely be five digits.
@@ -58,29 +60,39 @@ class ConstituentDataValidator:
                   format(constituent_id, input_address.__repr__(), variance_file))
         success = True
         formatted_input_address = self._reformat_address(address_info=input_address)
+        if formatted_input_address[cc.LGL_API_STREET] in ('', 'Not shared by donor'):
+            log.debug('The address was not shared by the donor.')
+            return success
         lgl_data = self._get_constituent_data(constituent_id=constituent_id)
-        if cc.LGL_API_ADDRESS_KEY not in lgl_data:
-            log.error('The street address key was not found for constituent ID: "{}"'.format(lgl_data['id']))
-            return
-        if len(lgl_data[cc.LGL_API_ADDRESS_KEY]) == 0:
-            log.error('No street addresses were found for constituent ID: "{}"'.format(lgl_data['id']))
-            return
-        lgl_address = lgl_data['street_addresses'][0]
         variance = []
+        if (cc.LGL_API_ADDRESS not in lgl_data) or (len(lgl_data[cc.LGL_API_ADDRESS]) == 0):
+            # If the input data doesn't have anything, then just return successful.  Otherwise, record the
+            # variance.
+            if not formatted_input_address[cc.LGL_API_STREET]:
+                return success
+            variance.append('No street addresses were found in LGL')
+        else:
+            lgl_address = lgl_data[cc.LGL_API_ADDRESS][0]
+            lgl_emails = ([email['address'] for email in lgl_data[cc.LGL_API_EMAIL] if 'address' in email])
+            if formatted_input_address[cc.LGL_API_STREET] != lgl_address[cc.LGL_API_STREET]:
+                variance.append('Street address information does not match')
+            if formatted_input_address[cc.LGL_API_CITY].lower() != lgl_address[cc.LGL_API_CITY].lower():
+                variance.append('City does not match')
+            if formatted_input_address[cc.LGL_API_STATE].upper() != lgl_address[cc.LGL_API_STATE].upper():
+                variance.append('State does not match')
+            if formatted_input_address[cc.LGL_API_POSTAL_CODE] not in lgl_address[cc.LGL_API_POSTAL_CODE]:
+                variance.append('Postal code does not match')
+            if formatted_input_address[cc.LGL_API_EMAIL] and \
+                    formatted_input_address[cc.LGL_API_EMAIL] not in lgl_emails:
+                variance.append('Email address does not match')
         error_info = {}
-        if formatted_input_address[cc.LGL_API_STREET] != lgl_address[cc.LGL_API_STREET]:
-            variance.append('Street address information does not match')
-        if formatted_input_address[cc.LGL_API_CITY] != lgl_address[cc.LGL_API_CITY]:
-            variance.append('City does not match')
-        if formatted_input_address[cc.LGL_API_STATE] != lgl_address[cc.LGL_API_STATE]:
-            variance.append('State does not match')
-        if formatted_input_address[cc.LGL_API_POSTAL_CODE] not in lgl_address[cc.LGL_API_POSTAL_CODE]:
-            variance.append('Postal code does not match')
         if variance:
             error_info = {
                 'lgl_id': lgl_data['id'],
                 'lgl_address': lgl_address,
+                'lgl_email': '"' + ', '.join(lgl_emails) + '"',
                 'input_address': input_address,
+                'input_email': formatted_input_address[cc.LGL_API_EMAIL],
                 'reason': '"' + ', '.join(variance) + '"'
             }
         if error_info:
@@ -112,6 +124,7 @@ class ConstituentDataValidator:
         output_address[cc.LGL_API_CITY] = address_info[cc.LGL_CITY]
         output_address[cc.LGL_API_STATE] = address_info[cc.LGL_STATE]
         output_address[cc.LGL_API_POSTAL_CODE] = address_info[cc.LGL_POSTAL_CODE]
+        output_address[cc.LGL_API_EMAIL] = address_info[cc.LGL_EMAIL_ADDRESS]
         return output_address
 
     # This private method will reformat a street name by removing all periods and making
@@ -173,23 +186,30 @@ class ConstituentDataValidator:
         variance_file_exists = os.path.exists(variance_file)
         output_file = open(variance_file, 'a')
         if not variance_file_exists or (os.path.getsize(variance_file) == 0):
-            output_file.write('LGL_ID,LGL_street,LGL_city,LGL_state,LGL_postal_code,input_address_1,' +
-                              'input_address_2,input_address_3,input_city,input_state,input_postal_code,reason\n')
+            output_file.write('LGL_ID,LGL_street,LGL_city,LGL_state,LGL_postal_code,LGL_email,input_address_1,' +
+                              'input_address_2,input_address_3,input_city,input_state,input_postal_code,'
+                              'input_email,reason\n')
         line = str(error_info['lgl_id']) + ',' + \
             error_info['lgl_address'][cc.LGL_API_STREET] + ',' + \
             error_info['lgl_address'][cc.LGL_API_CITY] + ',' + \
             error_info['lgl_address'][cc.LGL_API_STATE] + ',' + \
             str(error_info['lgl_address'][cc.LGL_API_POSTAL_CODE]) + ',' + \
+            error_info['lgl_email'] + ',' + \
             error_info['input_address'][cc.LGL_ADDRESS_LINE_1] + ',' + \
             error_info['input_address'][cc.LGL_ADDRESS_LINE_2] + ',' + \
             error_info['input_address'][cc.LGL_ADDRESS_LINE_3] + ',' + \
             error_info['input_address'][cc.LGL_CITY] + ',' + \
             error_info['input_address'][cc.LGL_STATE] + ',' + \
             str(error_info['input_address'][cc.LGL_POSTAL_CODE]) + ',' + \
+            error_info['input_email'] + ',' + \
             error_info['reason'] + '\n'
         log.debug(line)
         output_file.write(line)
         output_file.close()
+
+    # 'lgl_email': '"' + ', '.join(lgl_emails) + '"',
+    # 'input_address': input_address,
+    # 'input_email': formatted_input_address[cc.LGL_API_EMAIL],
 
     # This private method will return a dict with the address keys initialized to nothing.
     def _initialize_output_address_data(self):

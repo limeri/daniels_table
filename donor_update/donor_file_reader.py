@@ -103,6 +103,7 @@ class DonorFileReader:
     def check_address(self, donor_info):
         log.debug('Entering')
         if not self.variance_file:
+            log.debug('No variance file was given, so no variance checking will be done.')
             return
         lgl_ids = donor_info[cc.LGL_CONSTITUENT_ID]
         address_1 = donor_info[cc.LGL_ADDRESS_LINE_1_DNI]
@@ -111,17 +112,25 @@ class DonorFileReader:
         city = donor_info[cc.LGL_CITY_DNI]
         state = donor_info[cc.LGL_STATE_DNI]
         postal_code = donor_info[cc.LGL_POSTAL_CODE_DNI]
-        variance_count= 0
+        if cc.LGL_EMAIL_ADDRESS_DNI in donor_info.keys():
+            email = donor_info[cc.LGL_EMAIL_ADDRESS_DNI]
+        else:
+            email = dict.fromkeys(lgl_ids.keys(), '')  # Create a dict with the same keys and empty values
+        variance_count = 0
         for index in lgl_ids.keys():
             if not lgl_ids[index]:  # Skip this row if no LGL ID is found.
                 continue
             input_data = dict()
-            input_data[cc.LGL_ADDRESS_LINE_1] = address_1[index]
-            input_data[cc.LGL_ADDRESS_LINE_2] = address_2[index]
-            input_data[cc.LGL_ADDRESS_LINE_3] = address_3[index]
-            input_data[cc.LGL_CITY] = city[index]
-            input_data[cc.LGL_STATE] = state[index]
-            input_data[cc.LGL_POSTAL_CODE] = str(postal_code[index])
+            input_data[cc.LGL_ADDRESS_LINE_1] = address_1[index].strip()
+            input_data[cc.LGL_ADDRESS_LINE_2] = address_2[index].strip()
+            input_data[cc.LGL_ADDRESS_LINE_3] = address_3[index].strip()
+            input_data[cc.LGL_CITY] = city[index].strip()
+            input_data[cc.LGL_STATE] = state[index].strip()
+            input_data[cc.LGL_POSTAL_CODE] = str(postal_code[index]).strip()
+            if str(email[index]) == 'nan':
+                input_data[cc.LGL_EMAIL_ADDRESS] = ''  # No email was found.
+            else:
+                input_data[cc.LGL_EMAIL_ADDRESS] = email[index].strip()
             cdv = cdv_module.ConstituentDataValidator()
             success = cdv.validate_address_data(constituent_id=lgl_ids[index],
                                                 input_address=input_data,
