@@ -325,7 +325,7 @@ if __name__ == '__main__':
     log.addHandler(console_handler)
     log.setLevel(logging.DEBUG)
 
-    # run_normalize_street_name_test()
-    # run_get_constituent_data_test()
-    # run_reformat_address_test()
+    run_normalize_street_name_test()
+    run_get_constituent_data_test()
+    run_reformat_address_test()
     run_validate_address_data_test()

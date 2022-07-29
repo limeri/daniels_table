@@ -111,6 +111,7 @@ def main(argv):
 # Side Effects - The output file is created and populated.
 def reformat_data(input_files, output_file, variance_file):
     final_output = {}
+    donor_file_reader = None
     for input_file in input_files:
         # Write a divider line to the log file so it's easy to distinguish files.
         try:

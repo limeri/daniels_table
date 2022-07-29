@@ -27,6 +27,7 @@ ADDRESS_LIMERI = {
     cc.LGL_CITY: 'Framingham',
     cc.LGL_STATE: 'MA',
     cc.LGL_POSTAL_CODE: '01701',
+    cc.LGL_EMAIL_ADDRESS: 'limeri@hotmail.com'
 }
 
 ADDRESS_ALI_1 = {
@@ -36,6 +37,7 @@ ADDRESS_ALI_1 = {
     cc.LGL_CITY: 'Boston',
     cc.LGL_STATE: 'MA',
     cc.LGL_POSTAL_CODE: '02115',
+    cc.LGL_EMAIL_ADDRESS: 'roblehdaudali@gmail.com'
 }
 
 ADDRESS_ALI_2 = {
@@ -45,6 +47,7 @@ ADDRESS_ALI_2 = {
     cc.LGL_CITY: 'Boston',
     cc.LGL_STATE: 'MA',
     cc.LGL_POSTAL_CODE: '02115',
+    cc.LGL_EMAIL_ADDRESS: 'roblehdaudali@gmail.com'
 }
 
 ADDRESS_COLE = {
@@ -54,6 +57,7 @@ ADDRESS_COLE = {
     cc.LGL_CITY: 'Sperryville',
     cc.LGL_STATE: 'VA',
     cc.LGL_POSTAL_CODE: '22740',
+    cc.LGL_EMAIL_ADDRESS: 'KatCinVA@gmail.com'
 }
 
 ADDRESS_LIMERI_BAD = {
@@ -63,6 +67,7 @@ ADDRESS_LIMERI_BAD = {
     cc.LGL_CITY: 'Framingham',
     cc.LGL_STATE: 'MA',
     cc.LGL_POSTAL_CODE: '01702',
+    cc.LGL_EMAIL_ADDRESS: 'limeri@hotmail.com'
 }
 
 ADDRESS_COLE_BAD = {
@@ -72,4 +77,5 @@ ADDRESS_COLE_BAD = {
     cc.LGL_CITY: 'Sperryvill',
     cc.LGL_STATE: 'VA',
     cc.LGL_POSTAL_CODE: '22740',
+    cc.LGL_EMAIL_ADDRESS: 'KatCinVA@gmail.com'
 }
