@@ -181,6 +181,7 @@ class ConstituentDataValidator:
         variance = []
         lgl_emails = ([email['address'].lower() for email in lgl_data[cc.LGL_API_EMAIL] if 'address' in email])
         if input_address[cc.LGL_EMAIL_ADDRESS] and \
+                input_address[cc.LGL_EMAIL_ADDRESS].lower() != 'not shared by donor' and \
                 input_address[cc.LGL_EMAIL_ADDRESS].lower() not in lgl_emails:
             variance.append('Email address does not match')
         return variance
