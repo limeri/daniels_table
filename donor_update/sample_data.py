@@ -9,11 +9,11 @@ FILE_STRIPE = 'sample_files\\stripe.xlsx'
 FILE_YC = 'sample_files\\yourcause.csv'
 
 INPUT_FILES = {
-    'ben': FILE_BENEVITY,
-    'fid': FILE_FIDELITY,
-    'qb':  FILE_QB,
-    'stripe': FILE_STRIPE,
-    'yc': FILE_YC,
+    'ben': {'input': FILE_BENEVITY, 'output': 'test_ben_lgl.csv', 'variance': 'test_ben_variance.csv'},
+    'fid': {'input': FILE_FIDELITY, 'output': 'test_fid_lgl.csv', 'variance': 'test_fid_variance.csv'},
+    'qb': {'input': FILE_QB, 'output': 'test_qb_lgl.csv', 'variance': 'test_qb_variance.csv'},
+    'stripe': {'input': FILE_STRIPE, 'output': 'test_stripe_lgl.csv', 'variance': 'test_stripe_variance.csv'},
+    'yc': {'input': FILE_YC, 'output': 'test_yc_lgl.csv', 'variance': 'test_yc_variance.csv'},
 }
 
 ID_LIMERI = '956522'

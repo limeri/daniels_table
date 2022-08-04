@@ -7,6 +7,8 @@ Pipfile.lock
 ~*
 march_files
 march_files/*
+files_*
+files_*/*
 build
 build/*
 dist

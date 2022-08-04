@@ -12,12 +12,13 @@ import column_constants as cc
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "2"
+VERSION = "2.1"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
 #       final array.
 # 2 - Added physical and email checks between input files and LGL.
+# 2.1 - Updated doc and test code.
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
@@ -36,7 +37,7 @@ def setup_logger():
     # Create a file logger
     file_formatter = logging.Formatter(
         '%(asctime)s - %(module)s - %(funcName)s - %(lineno)s - %(levelname)s - %(message)s')
-    file_handler = logging.FileHandler('excel_{:%Y%m%d%H%M%S}.log'.format(datetime.now()))
+    file_handler = logging.FileHandler('log_donor_etl_{:%Y%m%d%H%M%S}.log'.format(datetime.now()))
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logging.DEBUG)
     log.addHandler(file_handler)
@@ -51,9 +52,10 @@ def setup_logger():
 
 
 def usage():
-    print('donor_etl -i <inputfile> -i <inputfile>, -o <outputfile>')
+    print('donor_etl -i <inputfile> -i <inputfile>, -o <outputfile> -v <variancefile>')
     print('Version {}'.format(VERSION))
     print('If -o is not specified, the output file will be "lgl.csv".')
+    print('If -v is not specified, the physical and email address variance code will not run.')
     print('\nFor --test, the args are "fid", "ben", "stripe", "qb", or "yc".  "--testall" runs everything.')
 
 
@@ -82,10 +84,13 @@ def main(argv):
                 print('The argument "{}" is not a valid test arg.  Valid args are: "{}".'.
                       format(arg, ', '.join(sample.INPUT_FILES.keys())))
                 exit(1)
-            print('Running test for "{}".'.format(sample.INPUT_FILES[arg]))
-            input_files.append(sample.INPUT_FILES[arg])
+            print('Running test for "{}".'.format(sample.INPUT_FILES[arg]['input']))
+            input_files.append(sample.INPUT_FILES[arg]['input'])
+            output_file = sample.INPUT_FILES[arg]['output']
+            variance_file = sample.INPUT_FILES[arg]['variance']
         elif opt.lower() == '--testall':
             input_files = input_files + list(sample.INPUT_FILES.values())
+            variance_file = 'test_all_variance.csv'
             print('Input files = "{}".'.format(', '.join(input_files)))
         elif opt in ('-i', '--input_file'):
             input_files.append(arg)
