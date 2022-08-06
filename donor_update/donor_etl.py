@@ -9,6 +9,7 @@ import pandas
 from datetime import datetime
 
 import column_constants as cc
+import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
@@ -106,6 +107,14 @@ def main(argv):
     log.debug('The input files are "{}".'.format(input_files))
     log.info('The output file is "{}".'.format(output_file))
     reformat_data(input_files=input_files, output_file=output_file, variance_file=variance_file)
+
+
+# This function runs the donor GUI and calls the reformat_data function with the user input.
+def run_gui():
+    gui = donor_gui.DonorGui()
+    values = gui.main_form()
+    input_files = values['input_files'].split('\n')
+    reformat_data(input_files=input_files, output_file=values['output_file'], variance_file=values['variance_file'])
 
 
 # This function manages the reformatting process for the data.  It does this by looping through each input file,
@@ -234,7 +243,8 @@ if __name__ == '__main__':
 
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
-        usage()
+        run_gui()
+        # usage()
         sys.exit(0)
 
     # If there are args, we expect a list of excel files.
