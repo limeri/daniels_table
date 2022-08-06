@@ -12,18 +12,20 @@
 import logging
 import re
 import sys
-
 import requests
+
+import column_constants as cc
+import display_data
 import sample_data as sample
 
 from configparser import ConfigParser
 
-import column_constants as cc
 
 URL_SEARCH_CONSTITUENT = 'https://api.littlegreenlight.com/api/v1/constituents/search'
 URL_CONSTITUENT_DETAILS = 'https://api.littlegreenlight.com/api/v1/constituents/'
 
 log = logging.getLogger()
+ml = display_data.DisplayData()
 
 
 class LglApi:
@@ -93,7 +95,7 @@ class LglApi:
             log.debug('The constituent ID is {}.'.format(cid))
         else:
             cid = ""
-            log.info('The constituent "{}" from the file "{}" was not found.'.format(name, file_name))
+            log.info(ml.save('The constituent "{}" from the file "{}" was not found.'.format(name, file_name)))
         return cid
 
     # This method makes the call to retrieve constituent details from LGL.
@@ -185,11 +187,11 @@ class LglApi:
         if params:
             error_msg += ' and parameters {}'.format(params)
         error_msg += '.'
-        log.error(error_msg)
+        log.error(ml.error(error_msg))
         if fatal:
             if not fatal_error_msg:
                 fatal_error_msg = "Contact Sandra Montesino at Daniel's Table for assistance."
-            log.error('This is a fatal error.\n\n{}'.format(fatal_error_msg))
+            log.error(ml.error('This is a fatal error.\n\n{}'.format(fatal_error_msg)))
             sys.exit(1)
 
 

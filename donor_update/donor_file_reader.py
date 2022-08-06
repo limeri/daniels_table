@@ -6,6 +6,7 @@ import logging
 import os
 
 import column_constants as cc
+import display_data
 import constituent_data_validator as cdv_module
 
 SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
@@ -13,6 +14,7 @@ SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
 SAMPLE_FILE = SAMPLE_FILE_FIDELITY
 
 log = logging.getLogger()
+ml = display_data.DisplayData()
 
 
 class DonorFileReader:
@@ -103,7 +105,7 @@ class DonorFileReader:
     def check_address(self, donor_info):
         log.debug('Entering')
         if not self.variance_file:
-            log.debug('No variance file was given, so no variance checking will be done.')
+            log.info(ml.save('No variance file was given, so no variance checking will be done.'))
             return
         lgl_ids = donor_info[cc.LGL_CONSTITUENT_ID]
         address_1 = self._get_value(key=cc.LGL_ADDRESS_LINE_1_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
@@ -135,63 +137,11 @@ class DonorFileReader:
             if not success:
                 variance_count += 1
         if variance_count > 0:
-            log.info('There were {} variance(s) in the addresses.  Please look at the file "{}" for the variances.'.
-                     format(variance_count, self.variance_file))
+            msg = 'There were {} variance(s) in the addresses.  Please look at the file "{}" for ' + \
+                  'the variances.'.format(variance_count, self.variance_file)
+            log.info(ml.save(msg))
         else:
-            log.info('No variances were found in the addresses.')
-
-    def old_check_address(self, donor_info):
-        log.debug('Entering')
-        if not self.variance_file:
-            log.debug('No variance file was given, so no variance checking will be done.')
-            return
-        lgl_ids = donor_info[cc.LGL_CONSTITUENT_ID]
-        address_1 = self._get_value(key=cc.LGL_ADDRESS_LINE_1_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
-        address_2 = self._get_value(key=cc.LGL_ADDRESS_LINE_1_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
-        address_1 = self._get_value(key=cc.LGL_ADDRESS_LINE_1_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
-        # if cc.LGL_ADDRESS_LINE_1_DNI in donor_info:
-        #     address_1 = donor_info[cc.LGL_ADDRESS_LINE_1_DNI]
-        # else:
-        #     address_1 = dict.fromkeys(lgl_ids.keys(), '')  # Create a dict with the same keys and empty values
-        if cc.LGL_ADDRESS_LINE_2_DNI in donor_info:
-            address_2 = donor_info[cc.LGL_ADDRESS_LINE_2_DNI]
-            address_3 = donor_info[cc.LGL_ADDRESS_LINE_3_DNI]
-        else:
-            address_2 = dict.fromkeys(lgl_ids.keys(), '')
-            address_3 = dict.fromkeys(lgl_ids.keys(), '')
-        city = donor_info[cc.LGL_CITY_DNI]
-        state = donor_info[cc.LGL_STATE_DNI]
-        postal_code = donor_info[cc.LGL_POSTAL_CODE_DNI]
-        if cc.LGL_EMAIL_ADDRESS_DNI in donor_info.keys():
-            email = donor_info[cc.LGL_EMAIL_ADDRESS_DNI]
-        else:
-            email = dict.fromkeys(lgl_ids.keys(), '')
-        variance_count = 0
-        for index in lgl_ids.keys():
-            if not lgl_ids[index]:  # Skip this row if no LGL ID is found.
-                continue
-            input_data = dict()
-            input_data[cc.LGL_ADDRESS_LINE_1] = address_1[index].strip()
-            input_data[cc.LGL_ADDRESS_LINE_2] = address_2[index].strip()
-            input_data[cc.LGL_ADDRESS_LINE_3] = address_3[index].strip()
-            input_data[cc.LGL_CITY] = city[index].strip()
-            input_data[cc.LGL_STATE] = state[index].strip()
-            input_data[cc.LGL_POSTAL_CODE] = str(postal_code[index]).strip()
-            if str(email[index]) == 'nan':
-                input_data[cc.LGL_EMAIL_ADDRESS] = ''  # No email was found.
-            else:
-                input_data[cc.LGL_EMAIL_ADDRESS] = email[index].strip()
-            cdv = cdv_module.ConstituentDataValidator()
-            success = cdv.validate_address_data(constituent_id=lgl_ids[index],
-                                                input_address=input_data,
-                                                variance_file=self.variance_file)
-            if not success:
-                variance_count += 1
-        if variance_count > 0:
-            log.info('There were {} variance(s) in the addresses.  Please look at the file "{}" for the variances.'.
-                     format(variance_count, self.variance_file))
-        else:
-            log.info('No variances were found in the addresses.')
+            log.info(ml.save('No variances were found in the addresses.'))
 
     # This private method will either retrieve data for a key from the donor info or it will return an
     # dict with all the keys, but empty values.

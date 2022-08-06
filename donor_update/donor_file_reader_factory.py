@@ -6,12 +6,11 @@
 # https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html
 
 import logging
-import sys
-
 import pandas
 import csv
 
 import column_constants as cc
+import display_data
 import donor_file_reader_benevity as benevity_reader
 import donor_file_reader_fidelity as fidelity_reader
 import donor_file_reader_stripe as stripe_reader
@@ -19,6 +18,7 @@ import donor_file_reader_quickbooks as qb_reader
 import donor_file_reader_yourcause as yc_reader
 
 log = logging.getLogger()
+ml = display_data.DisplayData()
 
 
 # This function reads the data from an donor data file and returns a dict of the data.  This
@@ -87,14 +87,14 @@ def get_file_reader(file_path):
         error_msg = 'The data read from the file "{}" was not recognized.  This is a serious error.'.format(file_path)
         error_msg += 'Please save this file for evaluation and contact the developer.'
         error_msg += '\n\nYou can continue to use this program with other files.'
-        log.error(error_msg)
+        log.error(ml.error(error_msg))
 
     if file_reader:
         file_reader.input_file = file_path
         file_reader.input_data = input_data
     else:
-        log.error('The input keys "{}" for file "{}" did not match any maps.  This data cannot be processed!'.format(
-            input_keys, file_path))
+        log.error(ml.error('The input keys "{}" for file "{}" did not match any maps.  This data cannot be processed!'.
+                           format(input_keys, file_path)))
 
     return file_reader
 

@@ -9,6 +9,7 @@ import pandas
 from datetime import datetime
 
 import column_constants as cc
+import display_data
 import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
@@ -23,6 +24,7 @@ VERSION = "2.1"
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
+ml = display_data.DisplayData()
 
 
 # This function sets up the logging for the program.  It creates a file and console log.  The console log will
@@ -33,7 +35,6 @@ log = logging.getLogger()
 # function prints a line of dashes with some whitespace to the file.  This should make it easier to discern multiple
 # executions in the same file.
 #
-# TODO: Make the console logger write in a different color so it's output is clear to the user.
 def setup_logger():
     # Create a file logger
     file_formatter = logging.Formatter(
@@ -105,7 +106,8 @@ def main(argv):
         output_file = 'lgl.csv'
 
     log.debug('The input files are "{}".'.format(input_files))
-    log.info('The output file is "{}".'.format(output_file))
+    log.debug('The output file is "{}".'.format(output_file))
+    log.debug('The variance file is "{}".'.format(variance_file))
     reformat_data(input_files=input_files, output_file=output_file, variance_file=variance_file)
 
 
@@ -115,6 +117,7 @@ def run_gui():
     values = gui.main_form()
     input_files = values['input_files'].split('\n')
     reformat_data(input_files=input_files, output_file=values['output_file'], variance_file=values['variance_file'])
+    gui.display_popup(ml.to_string())
 
 
 # This function manages the reformatting process for the data.  It does this by looping through each input file,
@@ -124,6 +127,9 @@ def run_gui():
 # Returns - none
 # Side Effects - The output file is created and populated.
 def reformat_data(input_files, output_file, variance_file):
+    log.info('The input files are "{}"\nThe output file is "{}"\nThe variance file is "{}"'.
+             format(', '.join(input_files), output_file, variance_file))
+
     final_output = {}
     donor_file_reader = None
     for input_file in input_files:
@@ -131,19 +137,22 @@ def reformat_data(input_files, output_file, variance_file):
         try:
             donor_file_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
             donor_file_reader.variance_file = variance_file
+
         except ValueError:
-            log.info('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.format(input_file))
+            log.error(ml.error('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.
+                               format(input_file)))
             continue
         try:
             output = donor_file_reader.map_fields()
         except NameError:
-            log.info('No field containing a donor name was found in the file, "{}", so it is not possible to look "'
-                     'up LGL IDs.  This may not be a valid input file.'.format(input_file))
+            log.error(ml.error('No field containing a donor name was found in the file, "{}", so it is not possible '
+                               'to look up LGL IDs.  This may not be a valid input file.'.format(input_file)))
             continue
         final_output = append_data(input_data=output, current_data=final_output)
 
     if final_output == {}:
-        log.error('No data was successfully processed.  The output file "{}" will not be created.'.format(output_file))
+        log.error(ml.error('No data was successfully processed.  The output file "{}" will not be created.'.
+                           format(output_file)))
         return
 
     # Make sure all the Gift Dates are Pandas Timestamps.
@@ -239,12 +248,11 @@ def _get_data_len(data):
 
 if __name__ == '__main__':
     setup_logger()
-    log.info("{} Version: {}".format(sys.argv[0], VERSION))
+    log.info(ml.save("{} Version: {}".format(sys.argv[0], VERSION)))
 
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
         run_gui()
-        # usage()
         sys.exit(0)
 
     # If there are args, we expect a list of excel files.

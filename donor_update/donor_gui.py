@@ -50,6 +50,12 @@ class DonorGui:
             values['variance_file'] += '.csv'
         return values
 
+    def display_popup(self, content):
+        layout = [[sg.Text(content)], [sg.OK()]]
+        window = sg.Window(title='Donor Information Updater Output', layout=layout, resizable=True, modal=True)
+        window.read()
+        window.close()
+
 
 def _run_main_form_test(output_default='NOT_SPECIFIED', variance_default='NOT_SPECIFIED'):
     main_form_args = {}
@@ -66,6 +72,11 @@ def test_main_form():
     # _run_main_form_test()
     _run_main_form_test(output_default='output_test', variance_default='variance_test')
 
+def test_display_popup():
+    gui = DonorGui()
+    gui.display_popup('This is a test\n- line 1\n- line 2')
+
 
 if __name__ == '__main__':
-    test_main_form()
+    # test_main_form()
+    test_display_popup()

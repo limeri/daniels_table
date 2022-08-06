@@ -15,6 +15,7 @@ import re
 
 from configparser import ConfigParser
 
+import display_data
 import donor_file_reader
 import lgl_api
 
@@ -31,6 +32,7 @@ DESC_KEY = 'Unnamed: 6'
 AMT_KEY = 'Unnamed: 8'
 
 log = logging.getLogger()
+ml = display_data.DisplayData()
 
 
 # Class: DonorFileReaderQuickbooks
@@ -218,7 +220,8 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
         else:
             # Not sure what to do if no name is found yet, so just tell the user.
             check_num = self.input_data[CHECK_NUM_KEY][index]
-            log.error('No name was found for check number {} in file "{}".'.format(check_num, self.input_file))
+            log.error(ml.error('No name was found for check number {} in file "{}".'.
+                               format(check_num, self.input_file)))
         return name
 
     # This private method will take the description and clean it up for the campaign field.  The rules are:

@@ -3,11 +3,13 @@
 import column_constants as cc
 import logging
 
+import display_data
 import donor_file_reader
 import lgl_api
 
 SAMPLE_FILE = 'sample_files\\stripe.xlsx'
 log = logging.getLogger()
+ml = display_data.DisplayData()
 
 
 class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
@@ -169,8 +171,8 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         # If there are less than 4 address fields, we don't know what they are.
         if len(address_fields) < 4 or len(address_fields) > 6:
             address = self.donor_data[cc.STRIPE_MAILING_ADDRESS_META][row_key]  # Just keeping code readable
-            log.error('Less than four or more than six address lines were found for row {} - "{}" in the file "{}".'.
-                      format(row_key, address, self.input_file))
+            log.error(ml.error('Less than four or more than six address lines were found for row {} - "{}" in ' +
+                               'the file "{}".'.format(row_key, address, self.input_file)))
             return
 
         self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = address_fields[0]
