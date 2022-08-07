@@ -14,7 +14,7 @@ SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
 SAMPLE_FILE = SAMPLE_FILE_FIDELITY
 
 log = logging.getLogger()
-ml = display_data.DisplayData()
+dd = display_data.DisplayData()
 
 
 class DonorFileReader:
@@ -105,7 +105,7 @@ class DonorFileReader:
     def check_address(self, donor_info):
         log.debug('Entering')
         if not self.variance_file:
-            log.info(ml.save('No variance file was given, so no variance checking will be done.'))
+            log.info(dd.save('No variance file was given, so no variance checking will be done.'))
             return
         lgl_ids = donor_info[cc.LGL_CONSTITUENT_ID]
         address_1 = self._get_value(key=cc.LGL_ADDRESS_LINE_1_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
@@ -137,11 +137,11 @@ class DonorFileReader:
             if not success:
                 variance_count += 1
         if variance_count > 0:
-            msg = 'There were {} variance(s) in the addresses.  Please look at the file "{}" for ' + \
-                  'the variances.'.format(variance_count, self.variance_file)
-            log.info(ml.save(msg))
+            msg = 'There were {} variance(s) in the addresses.  '.format(variance_count)
+            msg += 'Please look at the file "{}" for the variances.'.format(self.variance_file)
+            log.info(dd.save(msg))
         else:
-            log.info(ml.save('No variances were found in the addresses.'))
+            log.info(dd.save('No variances were found in the addresses.'))
 
     # This private method will either retrieve data for a key from the donor info or it will return an
     # dict with all the keys, but empty values.

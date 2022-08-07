@@ -26,6 +26,17 @@ class DonorGui:
     VARIANCE_FILE_TEXT = sg.Text('What is the name of the variance output file?', text_color='yellow')
     VARIANCE_FILE_INPUT = sg.Input(key='variance_file', size=(20, 1))
 
+    # This method will display the form that will collect the input files, output file name, and variance file
+    # name from the user.  If no input files are chosen when the user clicks the Submit button, the program will end.
+    #
+    # Args -
+    #   output_default - the default name for the LGL output file (contains the transformed data)
+    #   variance_default - the default name of the file that will contain address variance info
+    #
+    # Returns - a dict in the form:
+    #   {'input_files': <string of input files separated by newlines (\n)>,
+    #    'output_file': <name of the output file>,
+    #    'variance_file': <name of the variance file or ''>
     def main_form(self, output_default='lgl.csv', variance_default=''):
         self.OUTPUT_FILE_INPUT.DefaultText = output_default
         self.VARIANCE_FILE_INPUT.DefaultText = variance_default
@@ -50,9 +61,22 @@ class DonorGui:
             values['variance_file'] += '.csv'
         return values
 
-    def display_popup(self, content):
-        layout = [[sg.Text(content)], [sg.OK()]]
-        window = sg.Window(title='Donor Information Updater Output', layout=layout, resizable=True, modal=True)
+    # This method will display the messages that were written to the console by the program.  These messages are
+    # collected as a list of strings.  This uses a Multiline object instead of a Text object so that the messages
+    # can be selected and copied before dismissing the dialog.
+    #
+    # Args -
+    #   data - a list of strings to display
+    #
+    # Returns - none
+    def display_popup(self, messages):
+        width = max(len(max(messages, key=len)), 40)  # Minimum width for the text box is 40 chars.
+        line_cnt = len(messages)
+        content = '\n- '.join(messages)  # All msgs but the first have a dash for a bullet
+        layout = [[sg.Multiline(default_text=content, size=(width, line_cnt), disabled=True, no_scrollbar=True)],
+                  [sg.OK()]]
+        window = sg.Window(title='Donor Information Updater Messages', layout=layout, resizable=True,
+                           element_justification='c')
         window.read()
         window.close()
 
@@ -74,7 +98,8 @@ def test_main_form():
 
 def test_display_popup():
     gui = DonorGui()
-    gui.display_popup('This is a test\n- line 1\n- line 2')
+    # gui.display_popup('This is a test\n- line 1\n- line 2')
+    gui.display_popup(['This is a test', 'line 1 has a bunch of data', 'line 2 has even more data in it'])
 
 
 if __name__ == '__main__':

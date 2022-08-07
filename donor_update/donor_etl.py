@@ -14,17 +14,19 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "2.1"
+VERSION = "3"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
 #       final array.
 # 2 - Added physical and email checks between input files and LGL.
 # 2.1 - Updated doc and test code.
+# 3 - Added the GUI
+
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
-ml = display_data.DisplayData()
+dd = display_data.DisplayData()
 
 
 # This function sets up the logging for the program.  It creates a file and console log.  The console log will
@@ -117,7 +119,7 @@ def run_gui():
     values = gui.main_form()
     input_files = values['input_files'].split('\n')
     reformat_data(input_files=input_files, output_file=values['output_file'], variance_file=values['variance_file'])
-    gui.display_popup(ml.to_string())
+    gui.display_popup(dd.messages)
 
 
 # This function manages the reformatting process for the data.  It does this by looping through each input file,
@@ -139,19 +141,19 @@ def reformat_data(input_files, output_file, variance_file):
             donor_file_reader.variance_file = variance_file
 
         except ValueError:
-            log.error(ml.error('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.
+            log.error(dd.error('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.
                                format(input_file)))
             continue
         try:
             output = donor_file_reader.map_fields()
         except NameError:
-            log.error(ml.error('No field containing a donor name was found in the file, "{}", so it is not possible '
+            log.error(dd.error('No field containing a donor name was found in the file, "{}", so it is not possible '
                                'to look up LGL IDs.  This may not be a valid input file.'.format(input_file)))
             continue
         final_output = append_data(input_data=output, current_data=final_output)
 
     if final_output == {}:
-        log.error(ml.error('No data was successfully processed.  The output file "{}" will not be created.'.
+        log.error(dd.error('No data was successfully processed.  The output file "{}" will not be created.'.
                            format(output_file)))
         return
 
@@ -248,7 +250,7 @@ def _get_data_len(data):
 
 if __name__ == '__main__':
     setup_logger()
-    log.info(ml.save("{} Version: {}".format(sys.argv[0], VERSION)))
+    log.info(dd.save("{} Version: {}".format(sys.argv[0], VERSION)))
 
     # If there is only one arg (the script name), just run a test.
     if len(sys.argv) == 1:
