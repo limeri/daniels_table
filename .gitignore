@@ -14,3 +14,5 @@ build/*
 dist
 dist/*
 *.spec
+work
+work/*
