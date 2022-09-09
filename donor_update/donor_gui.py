@@ -2,6 +2,7 @@
 
 import datetime
 import PySimpleGUI as sg
+import sys
 
 
 # This class has the GUI elements required for the Donor ETL program.  It will display a form that asks the
@@ -32,12 +33,11 @@ class DonorGui:
     # name from the user.  If no input files are chosen when the user clicks the Submit button, the program will end.
     #
     # Args -
-    #   output_default - the default name for the LGL output file (contains the transformed data)
-    #   variance_default - the default name of the file that will contain address variance info
+    #   version - the version of the program to display in the title
     #
     # Returns - a dict in the form:
     #   {'input_files': <string of input files separated by newlines (\n)>,
-    def main_form(self):
+    def main_form(self, version):
         today = self._get_string_date()
         self.OUTPUT_FILE_INPUT.DefaultText = 'lgl_' + today + '.csv'
         self.VARIANCE_FILE_INPUT.DefaultText = 'address_variance_' + today + '.csv'
@@ -52,11 +52,11 @@ class DonorGui:
                   [self.VARIANCE_FILE_HELP_TEXT],
                   [sg.Submit(), sg.Quit()]]
 
-        window = sg.Window('Donor Information Updater', layout)
+        window = sg.Window('Donor Information Updater ' + version, layout)
         event, values = window.read()
         window.close()
         if (event in ['Quit', sg.WINDOW_CLOSED]) or (values['input_files'] == ''):
-            exit(0)
+            sys.exit(0)
         # If the output or variance file don't end in .csv, add it.
         if values['output_file'] and not values['output_file'].lower().endswith('.csv'):
             values['output_file'] += '.csv'
