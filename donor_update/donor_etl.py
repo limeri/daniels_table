@@ -117,7 +117,7 @@ def main(argv):
 # This function runs the donor GUI and calls the reformat_data function with the user input.
 def run_gui():
     gui = donor_gui.DonorGui()
-    values = gui.main_form()
+    values = gui.main_form(version=VERSION)
     input_files = values['input_files'].split('\n')
     reformat_data(input_files=input_files, output_file=values['output_file'], variance_file=values['variance_file'])
     gui.display_popup(dd.messages)
