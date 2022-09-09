@@ -1,11 +1,13 @@
 # The class in this module creates the GUI for the program.
 
+import datetime
 import PySimpleGUI as sg
 
 
 # This class has the GUI elements required for the Donor ETL program.  It will display a form that asks the
 # user to specify the input files, the output file, and the variance output file (if desired).
 class DonorGui:
+    PADDING = ((0, 0), (5, 15))
     INPUT_FILE_HELP_TEXT = sg.Text('Input files are the .csv or .xlsx files created from input sources like Stripe ' +
                                    'or Benevity.\nYou may select one or more input files to be analyzed.',
                                    text_color='black')
@@ -18,13 +20,13 @@ class DonorGui:
                                     'so that it can be directly imported into LGL.\nThe extension to ' +
                                     'the output file should be ".csv".', text_color='black')
     OUTPUT_FILE_TEXT = sg.Text('What is the name of the LGL output file?', text_color='yellow')
-    OUTPUT_FILE_INPUT = sg.Input(key='output_file', size=(20, 1))
+    OUTPUT_FILE_INPUT = sg.Input(key='output_file', size=(30, 1))
     VARIANCE_FILE_HELP_TEXT = sg.Text('The variance output file contains differences between the physical ' +
                                       'and/or email addresses in LGL and the input files.\nIf no variance file is ' +
                                       'specified, the address variance check will not be done.\nThe extension to ' +
-                                      'the variance file should be ".csv".', text_color='black')
-    VARIANCE_FILE_TEXT = sg.Text('What is the name of the variance output file?', text_color='yellow')
-    VARIANCE_FILE_INPUT = sg.Input(key='variance_file', size=(20, 1))
+                                      'the variance file should be ".csv".', text_color='black', pad=PADDING)
+    VARIANCE_FILE_TEXT = sg.Text('What is the name of the address variance output file?', text_color='yellow')
+    VARIANCE_FILE_INPUT = sg.Input(key='variance_file', size=(30, 1))
 
     # This method will display the form that will collect the input files, output file name, and variance file
     # name from the user.  If no input files are chosen when the user clicks the Submit button, the program will end.
@@ -35,18 +37,19 @@ class DonorGui:
     #
     # Returns - a dict in the form:
     #   {'input_files': <string of input files separated by newlines (\n)>,
-    #    'output_file': <name of the output file>,
-    #    'variance_file': <name of the variance file or ''>
-    def main_form(self, output_default='lgl.csv', variance_default=''):
-        self.OUTPUT_FILE_INPUT.DefaultText = output_default
-        self.VARIANCE_FILE_INPUT.DefaultText = variance_default
+    def main_form(self):
+        today = self._get_string_date()
+        self.OUTPUT_FILE_INPUT.DefaultText = 'lgl_' + today + '.csv'
+        self.VARIANCE_FILE_INPUT.DefaultText = 'address_variance_' + today + '.csv'
 
-        layout = [[self.INPUT_FILE_HELP_TEXT],
-                  [self.INPUT_FILE_TEXT, self.INPUT_FILE_BROWSER, self.DISPLAY_FILE_TEXT],
-                  [self.OUTPUT_FILE_HELP_TEXT],
+        layout = [[self.INPUT_FILE_TEXT, self.INPUT_FILE_BROWSER, self.DISPLAY_FILE_TEXT],
+                  [self.INPUT_FILE_HELP_TEXT],
+                  [sg.HorizontalSeparator(pad=self.PADDING)],
                   [self.OUTPUT_FILE_TEXT, self.OUTPUT_FILE_INPUT],
-                  [self.VARIANCE_FILE_HELP_TEXT],
+                  [self.OUTPUT_FILE_HELP_TEXT],
+                  [sg.HorizontalSeparator(pad=self.PADDING)],
                   [self.VARIANCE_FILE_TEXT, self.VARIANCE_FILE_INPUT],
+                  [self.VARIANCE_FILE_HELP_TEXT],
                   [sg.Submit(), sg.Quit()]]
 
         window = sg.Window('Donor Information Updater', layout)
@@ -79,6 +82,11 @@ class DonorGui:
                            element_justification='c')
         window.read()
         window.close()
+
+    # This private method will get today's date in a string form for use in file names.
+    def _get_string_date(self):
+        today = datetime.date.today()
+        return today.strftime('%Y%m%d')
 
 
 def _run_main_form_test(output_default='NOT_SPECIFIED', variance_default='NOT_SPECIFIED'):
