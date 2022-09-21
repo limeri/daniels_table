@@ -1,0 +1,7 @@
+This file contains email address that are in Constant Contact. I want to know whether these email addresses are in LGL.
+(I do not think most of them are.) Could you, without too much trouble, create a program to search by email address within LGL?
+
+The end result would be a file with all the email addresses.
+
+- If YES in LGL, give LGL Account #.
+- If NO in LGL, leave blank.

@@ -10,6 +10,7 @@
 # API_TOKEN: YOUR_TOKEN_HERE
 
 import logging
+import os
 import re
 import sys
 import requests
@@ -32,7 +33,8 @@ class LglApi:
 
     def __init__(self):
         c = ConfigParser()
-        c.read('donor_etl.properties')
+        conf_file = os.path.join(os.path.dirname(__file__), 'donor_etl.properties')
+        c.read(conf_file)
         self.lgl_api_token = c.get('lgl', 'api_token')
 
     # This method will search for a name in LGL's database.
