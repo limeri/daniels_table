@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "3.1"
+VERSION = "3.2"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -23,7 +23,7 @@ VERSION = "3.1"
 # 2.1 - Updated doc and test code.
 # 3 - Added the GUI
 # 3.1 - Cosmetic improvements to the GUI
-
+# 3.2 - Requested updates to address variances and benevity processing
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()

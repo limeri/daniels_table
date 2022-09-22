@@ -14,6 +14,7 @@ import os
 import re
 import sys
 import requests
+import time
 
 import column_constants as cc
 import display_data
@@ -21,7 +22,7 @@ import sample_data as sample
 
 from configparser import ConfigParser
 
-
+PROPERTY_FILE = 'donor_etl.properties'
 URL_SEARCH_CONSTITUENT = 'https://api.littlegreenlight.com/api/v1/constituents/search'
 URL_CONSTITUENT_DETAILS = 'https://api.littlegreenlight.com/api/v1/constituents/'
 
@@ -33,8 +34,32 @@ class LglApi:
 
     def __init__(self):
         c = ConfigParser()
-        conf_file = os.path.join(os.path.dirname(__file__), 'donor_etl.properties')
+        if getattr(sys, 'frozen', False):
+            # If the application is run as a bundle, the PyInstaller bootloader
+            # extends the sys module by a flag frozen=True.
+            application_path = os.path.dirname(sys.executable)
+        else:
+            application_path = os.path.dirname(os.path.abspath(__file__))
+
+        conf_file = os.path.abspath(application_path + "/" + PROPERTY_FILE)
+        log.debug('The conf_file is "{}".'.format(conf_file))
+
+        if not os.path.exists(conf_file):
+            log.error('The config file "{}" was not found.'.format(conf_file))
+            print('\nPlease take note of this error.  This program will end in 10 seconds.')
+            time.sleep(10)
+            sys.exit(1)
+
         c.read(conf_file)
+        # if os.path.exists(conf_file):
+        #     c.read(conf_file)
+        # else:
+        #     conf_file = os.path.join(os.path.dirname(__file__), PROPERTY_FILE)
+        #     if os.path.exists(conf_file):
+        #         c.read(conf_file)
+        #     else:
+        #         print('The path "{}" does not exist.'.format(conf_file))
+        #         sys.exit(1)
         self.lgl_api_token = c.get('lgl', 'api_token')
 
     # This method will search for a name in LGL's database.

@@ -76,7 +76,7 @@ class ConstituentDataValidator:
                 'lgl_email': '"' + ', '.join(lgl_emails) + '"',
                 'input_address': input_address,
                 'input_email': input_address[cc.LGL_EMAIL_ADDRESS],
-                'reason': '"' + ', '.join(variance) + '"'
+                'varying_fields': '"' + ', '.join(variance) + '"'
             }
             log.debug('Variances were found:\n{}'.format(error_info))
             self._log_bad_addresses(error_info=error_info, variance_file=variance_file)
@@ -104,7 +104,7 @@ class ConstituentDataValidator:
         output_address[cc.LGL_API_STREET] = address_line_1 + ' ' + address_line_2 + ' ' + address_line_3
         output_address[cc.LGL_API_STREET] = output_address[cc.LGL_API_STREET].strip()  # in case address_2/3 are empty
         output_address[cc.LGL_API_CITY] = address_info[cc.LGL_CITY]
-        output_address[cc.LGL_API_STATE] = address_info[cc.LGL_STATE]
+        output_address[cc.LGL_API_STATE] = self._normalize_state_name(address_info[cc.LGL_STATE])
         output_address[cc.LGL_API_POSTAL_CODE] = address_info[cc.LGL_POSTAL_CODE]
         output_address[cc.LGL_API_EMAIL] = address_info[cc.LGL_EMAIL_ADDRESS]
         return output_address
@@ -137,6 +137,30 @@ class ConstituentDataValidator:
         street = re.sub(r'\bPo Box\b', 'PO Box', street)  # Capitalize PO for PO Box.
         return street
 
+    # This private method will normalize state names to their abbreviation for selected states (currently,
+    # New England states + NY).
+    #
+    # Args -
+    #   state - the state to be normalized
+    #
+    # Returns - the two char abbreviation of the state
+    def _normalize_state_name(self, state):
+        if len(state) == 2:
+            return state
+        state = state.upper()
+        if state in ['MASSACHUSETTS', 'MASS']:
+            return 'MA'
+        if state in ['CONNECTICUT', 'CONN']:
+            return 'CT'
+        if state == 'VERMONT':
+            return 'VT'
+        if state == 'MAINE':
+            return 'ME'
+        if state == 'RHODE ISLAND':
+            return 'RI'
+        if state == 'NEW YORK':
+            return 'NY'
+
     # This private method will test that the physical address from the input file matches what is in LGL.
     #
     # Args -
@@ -160,13 +184,13 @@ class ConstituentDataValidator:
         else:
             lgl_address = lgl_data[cc.LGL_API_ADDRESS][0]
             if formatted_input_address[cc.LGL_API_STREET] != lgl_address[cc.LGL_API_STREET]:
-                variance.append('Street address information does not match')
+                variance.append('Street address')
             if formatted_input_address[cc.LGL_API_CITY].lower() != lgl_address[cc.LGL_API_CITY].lower():
-                variance.append('City does not match')
+                variance.append('City')
             if formatted_input_address[cc.LGL_API_STATE].upper() != lgl_address[cc.LGL_API_STATE].upper():
-                variance.append('State does not match')
+                variance.append('State')
             if formatted_input_address[cc.LGL_API_POSTAL_CODE] not in lgl_address[cc.LGL_API_POSTAL_CODE]:
-                variance.append('Postal code does not match')
+                variance.append('Postal code')
         return variance
 
     # This private method will test that the email address from the input file matches what is in LGL.
@@ -183,7 +207,7 @@ class ConstituentDataValidator:
         if input_address[cc.LGL_EMAIL_ADDRESS] and \
                 input_address[cc.LGL_EMAIL_ADDRESS].lower() != 'not shared by donor' and \
                 input_address[cc.LGL_EMAIL_ADDRESS].lower() not in lgl_emails:
-            variance.append('Email address does not match')
+            variance.append('Email address')
         return variance
 
     # This private method will make a call to get constituent detail data from LGL.  If the data
@@ -219,7 +243,7 @@ class ConstituentDataValidator:
         if not variance_file_exists or (os.path.getsize(variance_file) == 0):
             output_file.write('LGL_ID,LGL_street,LGL_city,LGL_state,LGL_postal_code,LGL_email,input_address_1,' +
                               'input_address_2,input_address_3,input_city,input_state,input_postal_code,'
-                              'input_email,reason\n')
+                              'input_email,varying_fields\n')
         line = str(error_info['lgl_id']) + ',' + \
             error_info['lgl_address'][cc.LGL_API_STREET] + ',' + \
             error_info['lgl_address'][cc.LGL_API_CITY] + ',' + \
@@ -233,7 +257,7 @@ class ConstituentDataValidator:
             error_info['input_address'][cc.LGL_STATE] + ',' + \
             str(error_info['input_address'][cc.LGL_POSTAL_CODE]) + ',' + \
             error_info['input_email'] + ',' + \
-            error_info['reason'] + '\n'
+            error_info['varying_fields'] + '\n'
         log.debug(line)
         output_file.write(line)
         output_file.close()
