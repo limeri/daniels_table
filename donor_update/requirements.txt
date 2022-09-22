@@ -11,5 +11,5 @@ requests==2.27.1
 six==1.16.0
 urllib3==1.26.8
 PySimpleGUI==4.60.3
-# pyinstaller==5.0
-# pyinstaller-hooks-contrib==2022.2
+pyinstaller==5.0
+pyinstaller-hooks-contrib==2022.2

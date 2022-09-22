@@ -103,6 +103,19 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
     def get_map(self):
         return cc.BENEVITY_MAP
 
+    # This method will override the map_fields method.  The purpose of doing this is to add the string,
+    # "Employer/Organization" to any gift note that has a value.
+    #
+    # Returns - same as original
+    def map_fields(self):
+        output_data = super(DonorFileReaderBenevity, self).map_fields()
+        for index in output_data[cc.LGL_GIFT_NOTE].keys():
+            if output_data[cc.LGL_GIFT_NOTE][index] and str(output_data[cc.LGL_GIFT_NOTE][index]) != 'nan':
+                output_data[cc.LGL_GIFT_NOTE][index] = 'Employer/Organization: ' + output_data[cc.LGL_GIFT_NOTE][index]
+            else:
+                output_data[cc.LGL_GIFT_NOTE][index] = ''  # Just being sure it's not "nan"
+        return output_data
+
     # This method will get the LGL IDs based on the name of the constituent.
     #
     # Returns - a dict of LGL IDs.  The keys of the dict will be in the format: {0: id_1, 1: id_2, ...}

@@ -61,7 +61,7 @@ def compare_names(data, output_file, start_index=0):
 if __name__ == '__main__':
     start_time = time.time()
     input_data = read_file(INPUT_FILE)
-    compare_names(data=input_data, output_file=OUTPUT_FILE, start_index=209)
+    compare_names(data=input_data, output_file=OUTPUT_FILE, start_index=0)
     end_time = time.time()
     elapsed_time = datetime.timedelta(seconds=(end_time-start_time))
     print('"{}" read and analyzed in {}.'.format(INPUT_FILE, elapsed_time))
