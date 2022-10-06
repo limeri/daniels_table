@@ -71,8 +71,13 @@ class LglApi:
     # Returns - a dict containing the name information from LGL
     def find_constituent(self, name, email=None):
         log.debug('Entering with name: "{}"'.format(name))
-        if not name:
+        if not name and not email:
             return {}
+        data = {}
+        # Try email first if it's there.  That will save a lot of extra calls trying to get the name right.
+        if email and str(email) != cc.EMPTY_CELL:
+            # Try the search by email if possible.
+            data = self._lgl_email_search(email=email)
         # If the whole string is upper case, make it title case (first letter of every word is capital).
         if name.isupper():
             name = name.title()
@@ -84,7 +89,8 @@ class LglApi:
         # search_terms = re.sub(r'([A-Z])([A-Z])', r'\1 \2', search_terms)  # Put spaces between consecutive capitals
         # search_terms = re.sub(r'\B[A-Z]', r' \g<0>', search_terms)  # Handle caps without a space prior
         # Search for the name.
-        data = self._lgl_name_search(name=search_terms)
+        if 'items' not in data or not data['items']:
+            data = self._lgl_name_search(name=search_terms)
         # If that fails, try to remove any initials.
         if 'items' not in data or not data['items']:
             search_terms = re.sub(r'([A-Z])([A-Z])', r'\1 \2', search_terms)  # Put spaces between consecutive capitals
@@ -99,9 +105,6 @@ class LglApi:
             # Try to remove middle names by removing every second word (Mary Louise Parker becomes Mary Parker).
             search_terms = re.sub(r'(\b\w+) \b\w+ (\b\w+)', r'\1 \2', search_terms)
             data = self._lgl_name_search(name=search_terms)
-        if 'items' not in data or not data['items'] and email and str(email) != cc.EMPTY_CELL:
-            # Try the search by email if possible.
-            data = self._lgl_email_search(email=email)
         return data
 
     # This method will find the ID of a constituent based on the name.
