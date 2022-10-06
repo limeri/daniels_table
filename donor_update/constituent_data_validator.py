@@ -183,13 +183,17 @@ class ConstituentDataValidator:
             variance.append('No street addresses were found in LGL')
         else:
             lgl_address = lgl_data[cc.LGL_API_ADDRESS][0]
-            if formatted_input_address[cc.LGL_API_STREET] != lgl_address[cc.LGL_API_STREET]:
+            input_street = formatted_input_address[cc.LGL_API_STREET]
+            input_city = formatted_input_address[cc.LGL_API_CITY]
+            input_state = formatted_input_address[cc.LGL_API_STATE]
+            input_postal_code = formatted_input_address[cc.LGL_API_POSTAL_CODE]
+            if not input_street or (input_street != lgl_address[cc.LGL_API_STREET]):
                 variance.append('Street address')
-            if formatted_input_address[cc.LGL_API_CITY].lower() != lgl_address[cc.LGL_API_CITY].lower():
+            if not input_city or (input_city.lower() != lgl_address[cc.LGL_API_CITY].lower()):
                 variance.append('City')
-            if formatted_input_address[cc.LGL_API_STATE].upper() != lgl_address[cc.LGL_API_STATE].upper():
+            if not input_state or (input_state.upper() != lgl_address[cc.LGL_API_STATE].upper()):
                 variance.append('State')
-            if formatted_input_address[cc.LGL_API_POSTAL_CODE] not in lgl_address[cc.LGL_API_POSTAL_CODE]:
+            if not input_postal_code or (input_postal_code not in lgl_address[cc.LGL_API_POSTAL_CODE]):
                 variance.append('Postal code')
         return variance
 

@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "3.2"
+VERSION = "3.3"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -24,6 +24,11 @@ VERSION = "3.2"
 # 3 - Added the GUI
 # 3.1 - Cosmetic improvements to the GUI
 # 3.2 - Requested updates to address variances and benevity processing
+# 3.3 - Fix issues from LGL, Stripe, Fidelity, and GUI
+#       - Work around the LGL restriction on the number of calls to its service of 200 every five mins
+#       - Stripe column name changes -- handle both old and new names just in case
+#       - Use the Fidelity Giving Account Name if the donor name is empty
+#       - Make final GUI popup more user-friendly
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
@@ -136,9 +141,10 @@ def reformat_data(input_files, output_file, variance_file):
     final_output = {}
     donor_file_reader = None
     for input_file in input_files:
-        # Write a divider line to the log file so it's easy to distinguish files.
         try:
             donor_file_reader = donor_file_reader_factory.get_file_reader(file_path=input_file)
+            if not donor_file_reader:
+                continue
             donor_file_reader.variance_file = variance_file
 
         except ValueError:
