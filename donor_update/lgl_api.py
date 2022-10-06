@@ -193,6 +193,12 @@ class LglApi:
         response = requests.get(url=URL_SEARCH_CONSTITUENT, params=search_params)
         if response.status_code != 200:
             self._handle_error(error_code=response.status_code, url=URL_SEARCH_CONSTITUENT, params=search_params)
+        if hasattr(self, 'status_code') and self.status_code and self.status_code == 429:
+            self._handle_error(error_code=self.status_code,
+                               url=URL_SEARCH_CONSTITUENT,
+                               params=search_params,
+                               fatal=True,
+                               fatal_error_msg='Little Green Light is not responding.  Please try again later.')
         data = response.json()
         log.debug('The json response is: {}'.format(data))
         return data

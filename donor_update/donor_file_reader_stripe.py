@@ -2,6 +2,7 @@
 
 import column_constants as cc
 import logging
+import time
 
 import display_data
 import donor_file_reader
@@ -44,8 +45,9 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         # Now loop through the rest of the rows and decide what data to keep.  For the data we do keep,
         # we need to properly break up the STRIPE_MAILING_ADDRESS_META into separate address components
         # and clean up the description.
-        for input_row_key in self.input_data[cc.STRIPE_STATUS]:
-            if self.input_data[cc.STRIPE_STATUS][input_row_key].lower() in ['failed', 'refunded']:
+        status_key = self._get_key(key1=cc.STRIPE_STATUS, key2=cc.STRIPE_STATUS_2)
+        for input_row_key in self.input_data[status_key]:
+            if self.input_data[status_key][input_row_key].lower() in ['failed', 'refunded']:
                 continue
             self._copy_data_row_to_donor_data(row_key=input_row_key)
             self._update_description(row_key=input_row_key)
@@ -57,12 +59,19 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
     def get_lgl_constituent_ids(self):
         log.debug('Entering')
         lgl = lgl_api.LglApi()
-        donor_names = self.donor_data[cc.STRIPE_CUSTOMER_DESCRIPTION]
+        customer_description_key = self._get_key(key1=cc.STRIPE_CUSTOMER_DESCRIPTION,
+                                                 key2=cc.STRIPE_CUSTOMER_DESCRIPTION_2)
+        customer_email_key = self._get_key(key1=cc.STRIPE_CUSTOMER_EMAIL, key2=cc.STRIPE_CUSTOMER_EMAIL_2)
+        donor_names = self.donor_data[customer_description_key]
         donor_first_names = self.donor_data[cc.STRIPE_USER_FIRST_NAME_META]
         donor_last_names = self.donor_data[cc.STRIPE_USER_LAST_NAME_META]
-        email_addresses = self.donor_data[cc.STRIPE_CUSTOMER_EMAIL]
+        email_addresses = self.donor_data[customer_email_key]
         lgl_ids = {}
         ids_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
+        # If more than 100 names, sleep each iteration cuz LGL doesn't allow more than 200 transactions every 5 mins.
+        sleep_time = 0
+        if len(donor_names.keys()) > 100:
+            sleep_time = 3
         for index in donor_names.keys():
             # If there is no name, you get a float not_a_number (nan) value, so cast everything to string.
             name = str(donor_names[index])
@@ -87,6 +96,7 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
                 else:
                     ids_found[email] = cid
             lgl_ids[index] = cid
+            time.sleep(sleep_time)
         return lgl_ids
 
     # ----- P R I V A T E   M E T H O D S ----- #
@@ -139,12 +149,15 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         self.donor_data[cc.LGL_ACKNOWLEDGEMENT_PREFERENCE][row_key] = "Do not acknowledge via LGL"
         self.donor_data[cc.LGL_PAYMENT_TYPE][row_key] = 'Credit Card Stripe'
 
-        desc = self.donor_data[cc.STRIPE_DESCRIPTION][row_key]
+        description_key = cc.STRIPE_DESCRIPTION
+        if cc.STRIPE_DESCRIPTION_2 in self.donor_data.keys():
+            description_key = cc.STRIPE_DESCRIPTION_2
+        desc = self.donor_data[description_key][row_key]
         # If the description doesn't contain "In Memory of", "In Honor of", or "Roundup:", clear it.
         if (desc.find(cc.STRIPE_DESC_MEMORY) == -1) and\
             (desc.find(cc.STRIPE_DESC_HONOR) == -1) and\
             (desc.find(cc.STRIPE_DESC_ROUNDUP) == -1):
-            self.donor_data[cc.STRIPE_DESCRIPTION][row_key] = ''
+            self.donor_data[description_key][row_key] = ''
         # If the description contains "RoundUp", copy the name to the first and last name fields.
         if desc.find(cc.STRIPE_DESC_ROUNDUP) > -1:
             label_len = len(cc.STRIPE_DESC_ROUNDUP) + 1  # We want to remove "RoundUp: " from the desc
@@ -187,3 +200,18 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         self.donor_data[cc.LGL_CITY_DNI][row_key] = address_fields[address_index]; address_index += 1
         self.donor_data[cc.LGL_STATE_DNI][row_key] = address_fields[address_index]; address_index += 1
         self.donor_data[cc.LGL_POSTAL_CODE_DNI][row_key] = address_fields[address_index]
+
+    # There are several keys in the Stripe data that may appear in more than one form.  For example, the
+    # "customer_description" key may also be "Customer Description".  This is fixed by having both keys in the
+    # constants.  This private method will get the key that's actually used by looking in the data to see what's
+    # there.
+    #
+    # Args - key1 - one of the two possible keys (eg: customer_description)
+    #        key2 - the other  possible keys (eg: Customer Description)
+    #
+    # Returns - the key that is found in self.donor_data.keys()
+    def _get_key(self, key1, key2):
+        final_key = key1
+        if key2 in self.donor_data.keys():
+            final_key = key2
+        return final_key

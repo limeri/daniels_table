@@ -4,6 +4,7 @@
 
 import logging
 import os
+import time
 
 import column_constants as cc
 import display_data
@@ -116,6 +117,10 @@ class DonorFileReader:
         postal_code = self._get_value(key=cc.LGL_POSTAL_CODE_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
         email = self._get_value(key=cc.LGL_EMAIL_ADDRESS_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
         variance_count = 0
+        # If more than 100 names, sleep each iteration cuz LGL doesn't allow more than 200 transactions every 5 mins.
+        sleep_time = 0
+        if len(lgl_ids.keys()) > 200:
+            sleep_time = 2
         for index in lgl_ids.keys():
             if not lgl_ids[index]:  # Skip this row if no LGL ID is found.
                 continue
@@ -136,6 +141,7 @@ class DonorFileReader:
                                                 variance_file=self.variance_file)
             if not success:
                 variance_count += 1
+            time.sleep(sleep_time)
         if variance_count > 0:
             msg = 'There were {} variance(s) in the addresses.  '.format(variance_count)
             msg += 'Please look at the file "{}" for the variances.'.format(self.variance_file)

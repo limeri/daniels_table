@@ -76,13 +76,28 @@ def get_file_reader(file_path):
             file_reader = stripe_reader.DonorFileReaderStripe()
         elif "Daniel's Table dba The Foodie Cafe" in input_keys:
             file_reader = qb_reader.DonorFileReaderQuickbooks()
+        else:
+            # If we get here, then we didn't match any input.  For diagnostic purposes, compare each of the map
+            # keys to the input keys.
+            log.debug('------------------------- Fidelity Comparison')
+            debug_key_compare(input_keys=input_keys, map_keys=cc.FIDELITY_MAP.keys())
+            log.debug('------------------------- Stripe Comparison')
+            debug_key_compare(input_keys=input_keys, map_keys=cc.STRIPE_MAP.keys())
+            log.debug('------------------------- Quickbooks Comparison')
+            debug_key_compare(input_keys=input_keys, map_keys=cc.QB_MAP.keys())
     elif type(input_data) == list:
         input_keys = input_data[11]  # For Benevity, the column names are on line 12.  Compare them to the Benevity map.
         if set(input_keys) <= set(cc.BENEVITY_MAP.keys()):
             file_reader = benevity_reader.DonorFileReaderBenevity()
-        input_keys = input_data[0]
-        if set(input_keys) <= set(cc.YC_MAP.keys()):
+        elif set(input_keys) <= set(cc.YC_MAP.keys()):
             file_reader = yc_reader.DonorFileReaderYourCause()
+        else:
+            # If we get here, then we didn't match any input.  For diagnostic purposes, compare each of the map
+            # keys to the input keys.
+            log.debug('------------------------- Benevity Comparison')
+            debug_key_compare(input_keys=input_keys, map_keys=cc.BENEVITY_MAP.keys())
+            log.debug('------------------------- YourCause Comparison')
+            debug_key_compare(input_keys=input_keys, map_keys=cc.YC_MAP.keys())
     else:
         error_msg = 'The data read from the file "{}" was not recognized.  This is a serious error.'.format(file_path)
         error_msg += 'Please save this file for evaluation and contact the developer.'
@@ -106,23 +121,23 @@ def get_file_reader(file_path):
 #   input_keys - the list of keys from the input file
 #   map_keys - the keys from the MAP dict in column_constants
 def debug_key_compare(input_keys, map_keys):
-    print("Comparing input keys to map keys:")
+    log.debug("Comparing input keys to map keys:")
     error_cnt = 0
     for key in input_keys:
         if key not in map_keys:
             error_cnt += 1
-            print('Input key "{}" is not found in the map keys.'.format(key))
+            log.debug('Input key "{}" is not found in the map keys.'.format(key))
     if error_cnt == 0:
-        print('No errors found comparing input keys to map keys.')
+        log.debug('No errors found comparing input keys to map keys.')
 
-    print("Comparing input keys to map keys:")
+    log.debug("Comparing map keys to input keys:")
     error_cnt = 0
     for key in map_keys:
         if key not in input_keys:
             error_cnt += 1
-            print('Map key "{}" is not found in the input keys.'.format(key))
+            log.debug('Map key "{}" is not found in the input keys.'.format(key))
     if error_cnt == 0:
-        print('No errors found comparing map keys to input keys.')
+        log.debug('No errors found comparing map keys to input keys.')
 
 
 # Test getting the Fidelity file reader class successfully.
@@ -145,7 +160,8 @@ def test_get_file_reader_benevity():
 
 # Test getting the Stripe file reader class successfully.
 def test_get_file_reader_stripe():
-    file_reader = get_file_reader(file_path='sample_files\\stripe.xlsx')
+    # file_reader = get_file_reader(file_path='sample_files\\stripe.xlsx')
+    file_reader = get_file_reader(file_path='files_202208\\Stripe_July_Aug_2022.xlsx')
     if type(file_reader) == stripe_reader.DonorFileReaderStripe:
         print('PASS - The Stripe File Reader was returned.')
     else:
@@ -177,8 +193,8 @@ if __name__ == '__main__':
     log.addHandler(console_handler)
     log.setLevel(logging.INFO)
 
-    test_get_file_reader_fidelity()
-    test_get_file_reader_benevity()
+    # test_get_file_reader_fidelity()
+    # test_get_file_reader_benevity()
     test_get_file_reader_stripe()
-    test_get_file_reader_quickbooks()
-    test_get_file_reader_yourcause()
+    # test_get_file_reader_quickbooks()
+    # test_get_file_reader_yourcause()
