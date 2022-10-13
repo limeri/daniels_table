@@ -25,6 +25,7 @@ from configparser import ConfigParser
 PROPERTY_FILE = 'donor_etl.properties'
 URL_SEARCH_CONSTITUENT = 'https://api.littlegreenlight.com/api/v1/constituents/search'
 URL_CONSTITUENT_DETAILS = 'https://api.littlegreenlight.com/api/v1/constituents/'
+URL_CONSTITUENT_DONATIONS = 'https://api.littlegreenlight.com/api/v1/constituents/{}/gifts.json?limit=10'
 
 log = logging.getLogger()
 ml = display_data.DisplayData()
@@ -159,14 +160,32 @@ class LglApi:
     #    'updated_at': '2019-06-18T15:50:34Z'}]}], 'groups': [], 'memberships': [], 'custom_attrs': []}
     def get_constituent_info(self, constituent_id):
         id_url = URL_CONSTITUENT_DETAILS + str(constituent_id)
-        url_params = {'access_token': self.lgl_api_token}
-        log.debug('The URL is "{}" and the parameters are: "{}".'.format(id_url, url_params))
-        response = requests.get(url=id_url, params=url_params)
-        if response.status_code != 200:
-            self._handle_error(error_code=response.status_code, url=id_url, params=url_params)
-        data = response.json()
-        log.debug('The json response is: {}'.format(data))
+        data = self._lgl_api(url=id_url)
         return data
+
+    # This method gets the gifts history of the constituent.
+    #
+    # Args -
+    #   constituent_id - the constituent ID
+    #
+    # Returns - an array with the format:
+    #   [{'id': 926177,
+    #     'constituent_id': 956522,
+    #     'gift_type_id': 1,
+    #     'gift_type_name': 'Gift',
+    #     'amount': 100.0,
+    #     'date': '2022-05-04',
+    #     'created_at': '2022-05-27T18:35:11Z',
+    #     'updated_at': '2022-06-10T12:40:36Z'},
+    #    {...}
+    #   ]
+    def get_donations(self, constituent_id):
+        url = URL_CONSTITUENT_DONATIONS.format(constituent_id)
+        data = self._lgl_api(url=url)
+        if 'items' in data.keys():
+            return data['items']
+        else:
+            return []
 
     # ----- P R I V A T E   M E T H O D S ----- #
 
@@ -191,15 +210,27 @@ class LglApi:
     #   {'api_version': '1.0', 'items_count': n, 'total_items': n, 'limit': n, 'offset': n,
     #    'item_type': 'constituent', 'items': {...}}
     def _lgl_search(self, search_terms):
-        search_params = {'q': search_terms, 'access_token': self.lgl_api_token}
-        log.debug('The search parameters are: "{}".'.format(search_params))
-        response = requests.get(url=URL_SEARCH_CONSTITUENT, params=search_params)
+        search_params = {'q': search_terms}
+        data = self._lgl_api(url=URL_SEARCH_CONSTITUENT, url_params=search_params)
+        log.debug('The json response is: {}'.format(data))
+        return data
+
+    # This private method makes a call to the LGL API so that error handling is consistent with all calls.
+    # Args -
+    #   url - the URL
+    #   params - the parameters
+    #
+    # Returns - the response object in json format
+    def _lgl_api(self, url, url_params={}):
+        url_params['access_token'] = self.lgl_api_token
+        log.debug('The URL is "{}" and the parameters are: "{}".'.format(url, url_params))
+        response = requests.get(url=url, params=url_params)
         if response.status_code != 200:
-            self._handle_error(error_code=response.status_code, url=URL_SEARCH_CONSTITUENT, params=search_params)
+            self._handle_error(error_code=response.status_code, url=url, params=url_params)
         if hasattr(self, 'status_code') and self.status_code and self.status_code == 429:
             self._handle_error(error_code=self.status_code,
-                               url=URL_SEARCH_CONSTITUENT,
-                               params=search_params,
+                               url=url,
+                               params=url_params,
                                fatal=True,
                                fatal_error_msg='Little Green Light is not responding.  Please try again later.')
         data = response.json()
@@ -267,6 +298,14 @@ def run_get_constituent_info_test():
     log.debug('The data for {} is:\n{}'.format(test_id, data.__repr__()))
 
 
+# Test the get_donations method.
+def run_get_donations_test():
+    lgl = LglApi()
+    cid = sample.ID_LIMERI
+    donations = lgl.get_donations(constituent_id=cid)
+    log.debug('The donation data for "{}" is:\n{}'.format(cid, donations.__repr__()))
+
+
 if __name__ == '__main__':
     console_formatter = logging.Formatter('%(module)s.%(funcName)s - %(message)s')
     console_handler = logging.StreamHandler()
@@ -279,3 +318,5 @@ if __name__ == '__main__':
     run_find_constituent_id_by_name_test()
     log.debug('-----')
     run_get_constituent_info_test()
+    log.debug('-----')
+    run_get_donations_test()
