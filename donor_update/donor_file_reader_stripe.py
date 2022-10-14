@@ -1,8 +1,10 @@
 # This class will read excel input files, retrieve info from them, and create a CSV file with the new format.
 
 import column_constants as cc
+import datetime
 import logging
 import time
+import re
 
 import display_data
 import donor_file_reader
@@ -98,6 +100,60 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
             lgl_ids[index] = cid
             time.sleep(sleep_time)
         return lgl_ids
+
+    # This method overrides the map_fields method in the parent class.  In addition to mapping fields based on
+    # self.donor_data, it will look for users that are repeat donors.
+    #
+    # Returns - same as parent method
+    def map_fields(self):
+        log.debug('Entering')
+        output_data = super().map_fields()
+        constituent_ids = output_data[cc.LGL_CONSTITUENT_ID]
+        lgl = lgl_api.LglApi()
+        for index in constituent_ids.keys():
+            constituent_id = str(constituent_ids[index])
+            campaign = str(output_data[cc.LGL_CAMPAIGN_NAME][index])
+            # Skip if no ID or there is a campaign name.
+            if not constituent_id or (campaign and campaign != cc.EMPTY_CELL):
+                output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL
+                continue
+            donations = lgl.get_donations(constituent_id=constituent_id)
+            output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL
+            if not donations:
+                continue
+            recurring = self._is_recurring(output_data=output_data, index=index, donations=donations)
+            if recurring:
+                output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL_RECURRING
+        return output_data
+
+    def _is_recurring(self, output_data, index, donations):
+        log.debug('Entering for index {}'.format(index))
+        recurs = False
+        gift_date = output_data[cc.LGL_GIFT_DATE][index]
+        gift_amount = output_data[cc.LGL_GIFT_AMOUNT][index]
+        for donation in donations:
+            if donation['amount'] != gift_amount:
+                continue
+            donation_date_d = datetime.datetime.strptime(donation['date'], '%Y-%m-%d')
+            lapsed_time = (gift_date - donation_date_d).days
+            recurs = lapsed_time <= 31  # Looking for similar donations in the last month.
+            break
+        return recurs
+
+    #   [{'id': 926177,
+    #     'constituent_id': 956522,
+    #     'gift_type_id': 1,
+    #     'gift_type_name': 'Gift',
+    #     'amount': 100.0,
+    #     'date': '2022-05-04',
+    #     'created_at': '2022-05-27T18:35:11Z',
+    #     'updated_at': '2022-06-10T12:40:36Z'},
+    #    {...}
+    #   ]
+
+    # {'Recommended By': {0: 'Online at FC', 1: 'Online at FC', 2: 'Online at FC'},
+    #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868},
+    #  'Grant Amount': {0: 10, 1: 20, 2: 30, }, ...
 
     # ----- P R I V A T E   M E T H O D S ----- #
 
@@ -207,7 +263,7 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
     # there.
     #
     # Args - key1 - one of the two possible keys (eg: customer_description)
-    #        key2 - the other  possible keys (eg: Customer Description)
+    #        key2 - the other possible key (eg: Customer Description)
     #
     # Returns - the key that is found in self.donor_data.keys()
     def _get_key(self, key1, key2):

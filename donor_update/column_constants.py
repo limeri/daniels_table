@@ -190,6 +190,9 @@ STRIPE_DESC_GIVE_LIVELY = 'Give Lively / Smart Donations'
 STRIPE_DESC_MEMORY = 'In Memory of'
 STRIPE_DESC_HONOR = 'In Honor of'
 STRIPE_DESC_ROUNDUP = 'RoundUp:'
+# These are stripe campaign names
+STRIPE_GENERAL = 'General'
+STRIPE_GENERAL_RECURRING = 'General~Recurring Stripe'
 
 # Quickbook input fields
 QB_DATE = 'Date'
