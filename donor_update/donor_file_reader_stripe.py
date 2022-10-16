@@ -4,7 +4,6 @@ import column_constants as cc
 import datetime
 import logging
 import time
-import re
 
 import display_data
 import donor_file_reader
