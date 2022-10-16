@@ -167,11 +167,9 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
             self.donor_data[key] = {}
         self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI] = {}
         self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI] = {}
-        self.donor_data[cc.LGL_ADDRESS_LINE_3_DNI] = {}
         self.donor_data[cc.LGL_CITY_DNI] = {}
         self.donor_data[cc.LGL_STATE_DNI] = {}
         self.donor_data[cc.LGL_POSTAL_CODE_DNI] = {}
-        self.donor_data[cc.LGL_ACKNOWLEDGEMENT_PREFERENCE] = {}
         self.donor_data[cc.LGL_PAYMENT_TYPE] = {}
 
     # This private method will copy a row of data from input_data to donor_data.
@@ -186,7 +184,6 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
             self.donor_data[label_key][row_key] = self.input_data[label_key][row_key]
         self.donor_data[cc.LGL_ADDRESS_LINE_1_DNI][row_key] = ''
         self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = ''
-        self.donor_data[cc.LGL_ADDRESS_LINE_3_DNI][row_key] = ''
         self.donor_data[cc.LGL_CITY_DNI][row_key] = ''
         self.donor_data[cc.LGL_STATE_DNI][row_key] = ''
         self.donor_data[cc.LGL_POSTAL_CODE_DNI][row_key] = ''
@@ -196,13 +193,11 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
     # - If it says "Roundup", the name should be carried into the first and last name columns.
     # - Add the "seller_message" column to description if it doesn't say "Payment Complete".
     # - Set the "Payment Type" field to "Credit Card Stripe"
-    # - Set the Acknowledgement field to "Do not acknowledge via LGL"
     #
-    # Side Effect: the description, payment type, and acknowledgement fields in self.donor_data are modified.
+    # Side Effect: the description and payment type in self.donor_data are modified.
     def _update_description(self, row_key):
         log.debug('Entering for row_key "{}"'.format(row_key))
-        # Do the acknowledgement and payment type first.  They're simple.
-        self.donor_data[cc.LGL_ACKNOWLEDGEMENT_PREFERENCE][row_key] = "Do not acknowledge via LGL"
+        # Do the payment type first.  They're simple.
         self.donor_data[cc.LGL_PAYMENT_TYPE][row_key] = 'Credit Card Stripe'
 
         description_key = cc.STRIPE_DESCRIPTION
@@ -249,9 +244,6 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         address_index = 1  # Note that address_index is incremented on the same line as the assignment.
         if len(address_fields) == 5:
             self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = address_fields[address_index]; address_index += 1
-        elif len(address_fields) == 6:
-            self.donor_data[cc.LGL_ADDRESS_LINE_2_DNI][row_key] = address_fields[address_index]; address_index += 1
-            self.donor_data[cc.LGL_ADDRESS_LINE_3_DNI][row_key] = address_fields[address_index]; address_index += 1
         # Add city, state, and zip.
         self.donor_data[cc.LGL_CITY_DNI][row_key] = address_fields[address_index]; address_index += 1
         self.donor_data[cc.LGL_STATE_DNI][row_key] = address_fields[address_index]; address_index += 1
