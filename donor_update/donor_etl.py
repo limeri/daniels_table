@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "4"
+VERSION = "4.1"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -30,6 +30,7 @@ VERSION = "4"
 #       - Use the Fidelity Giving Account Name if the donor name is empty
 #       - Make final GUI popup more user-friendly
 # 4 - Add check for recurring Stripe payments
+# 4.1 - Fix bug that overwrote legitimate campaign names
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
