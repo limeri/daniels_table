@@ -114,7 +114,8 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
             campaign = str(output_data[cc.LGL_CAMPAIGN_NAME][index])
             # Skip if no ID or there is a campaign name.
             if not constituent_id or (campaign and campaign != cc.EMPTY_CELL):
-                output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL
+                if not campaign or campaign == cc.EMPTY_CELL:
+                    output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL
                 continue
             donations = lgl.get_donations(constituent_id=constituent_id)
             output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL
