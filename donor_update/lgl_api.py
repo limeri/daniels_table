@@ -52,15 +52,6 @@ class LglApi:
             sys.exit(1)
 
         c.read(conf_file)
-        # if os.path.exists(conf_file):
-        #     c.read(conf_file)
-        # else:
-        #     conf_file = os.path.join(os.path.dirname(__file__), PROPERTY_FILE)
-        #     if os.path.exists(conf_file):
-        #         c.read(conf_file)
-        #     else:
-        #         print('The path "{}" does not exist.'.format(conf_file))
-        #         sys.exit(1)
         self.lgl_api_token = c.get('lgl', 'api_token')
 
     # This method will search for a name in LGL's database.
@@ -124,6 +115,16 @@ class LglApi:
         if 'items' in data.keys() and data['items']:
             cid = data['items'][0]['id']
             log.debug('The constituent ID is {}.'.format(cid))
+            if len(data['items']) > 1:
+                msg = 'The name "{}"'.format(name)
+                if email:
+                    msg += ', email "{}"'.format(email)
+                msg += ' matches {} accounts'.format(str(len(data['items'])))
+                sep = ':'
+                for constituent in data['items']:
+                    msg += sep + ' "' + constituent['addressee'] + '" (' + str(constituent['id']) + ')'
+                    sep = ','
+                log.info(ml.save(msg))
         else:
             cid = ""
             log.info(ml.save('The constituent "{}" from the file "{}" was not found.'.format(name, file_name)))
