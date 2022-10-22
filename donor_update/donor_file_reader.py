@@ -6,9 +6,11 @@ import logging
 import os
 import time
 
+from configparser import ConfigParser
+
 import column_constants as cc
-import display_data
 import constituent_data_validator as cdv_module
+import display_data
 
 SAMPLE_FILE_BENEVITY = 'sample_files\\benevity.csv'
 SAMPLE_FILE_FIDELITY = 'sample_files\\2022fidelity.xlsx'
@@ -37,6 +39,8 @@ class DonorFileReader:
         self.donor_data = {}
         self.input_file = 'Input File Not Known'
         self.variance_file = ''
+        self.campaigns = {}
+        self._get_campaigns()
 
     @property
     def input_data(self):
@@ -92,14 +96,24 @@ class DonorFileReader:
                 continue
             log.debug('The input key "{}" is being replaced by "{}"'.format(input_key, output_key))
             output_data[output_key] = self.donor_data[input_key]
-        id_list = self.get_lgl_constituent_ids()
-        output_data[cc.LGL_CONSTITUENT_ID] = id_list
+        # Clean up campaign names if they are there.
+        if cc.LGL_CAMPAIGN_NAME in output_data.keys():
+            campaigns = output_data[cc.LGL_CAMPAIGN_NAME]
+            for index in campaigns.keys():
+                campaign = self._clean_campaign(description=str(campaigns[index]))
+                output_data[cc.LGL_CAMPAIGN_NAME][index] = campaign
+        constituent_ids = self.get_lgl_constituent_ids()
+        output_data[cc.LGL_CONSTITUENT_ID] = constituent_ids
+        # Fill out the gift type and category
+        indexes = output_data[cc.LGL_CONSTITUENT_ID].keys()
+        output_data[cc.LGL_GIFT_TYPE] = dict.fromkeys(indexes, 'Gift')
+        output_data[cc.LGL_GIFT_CATEGORY] = dict.fromkeys(indexes, 'Donation')
         return output_data
 
     # This method will call the address verification method for all the donors in the input files.
     #
     # Args -
-    #   donor_info - the output from map_fields (from all of the input files)
+    #   donor_info - the output from map_fields (from all input files)
     #
     # Returns - none
     # Side effects - see the ConstituentDataValidator class
@@ -149,7 +163,7 @@ class DonorFileReader:
         else:
             log.info(dd.save('No variances were found in the addresses.'))
 
-    # This private method will either retrieve data for a key from the donor info or it will return an
+    # This private method will either retrieve data for a key from the donor info or it will return a
     # dict with all the keys, but empty values.
     #
     # Args -
@@ -164,6 +178,37 @@ class DonorFileReader:
         else:
             value = dict.fromkeys(key_list, '')  # Create a dict with the same keys and empty values
         return value
+
+    # This private method will take the description and clean it up for the campaign field.  The rules are:
+    #   - Eliminate any description that is just the word, "donation".
+    #   - Map anything left to a known campaign name if possible.  Otherwise return ''.
+    #
+    # Args -
+    #   description - the description field from the original data
+    #
+    # Returns - a string with the correct campaign name or an empty string
+    def _clean_campaign(self, description):
+        log.debug('Entering for description "{}".'.format(description))
+        desc = description.lower().strip()
+        if not desc or ((desc == cc.EMPTY_CELL) or (desc == 'donation')):
+            campaign = cc.GENERAL
+        else:
+            campaign = description
+        if desc in self.campaigns.keys():
+            campaign = self.campaigns[desc]
+        log.debug('The campaign is "{}".'.format(campaign))
+        return campaign
+
+    # This private method will read the config file for any campaign translations that are needed.
+    #
+    # Side Effects: the self.campaigns class variable is initialized
+    def _get_campaigns(self):
+        log.debug('Entering')
+        c = ConfigParser()
+        c.read('donor_etl.properties')
+        config_items = c.items('campaigns')
+        for item in config_items:
+            self.campaigns[item[0].lower()] = item[1]
 
 
 # This is a test function for map_fields and to see what the data looks like.

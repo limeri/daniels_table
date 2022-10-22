@@ -4,6 +4,7 @@
 IGNORE_FIELD = '***** IGNORE THIS FIELD *****'
 DO_NOT_IMPORT = 'DO NOT IMPORT - '
 EMPTY_CELL = 'nan'
+GENERAL = 'General'
 
 # LGL API fields -- these are key names that you get back when you make an API call to get client details.
 LGL_API_ADDRESS = 'street_addresses'
@@ -43,6 +44,8 @@ LGL_COMPANY_DNI = DO_NOT_IMPORT + LGL_COMPANY
 LGL_GIFT_DATE = 'Gift date'
 LGL_GIFT_AMOUNT = 'Gift amount'
 LGL_GIFT_NOTE = 'Gift note'
+LGL_GIFT_TYPE = 'Gift type'
+LGL_GIFT_CATEGORY = 'Gift category'
 LGL_CAMPAIGN_NAME = 'Campaign name'
 LGL_PAYMENT_TYPE = 'Payment type'
 LGL_ACKNOWLEDGEMENT_PREFERENCE = 'Acknowledgment Preference'
@@ -191,7 +194,6 @@ STRIPE_DESC_MEMORY = 'In Memory of'
 STRIPE_DESC_HONOR = 'In Honor of'
 STRIPE_DESC_ROUNDUP = 'RoundUp:'
 # These are stripe campaign names
-STRIPE_GENERAL = 'General'
 STRIPE_GENERAL_RECURRING = 'General~Recurring Stripe'
 
 # Quickbook input fields

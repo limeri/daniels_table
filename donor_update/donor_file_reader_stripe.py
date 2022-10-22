@@ -113,47 +113,73 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
             constituent_id = str(constituent_ids[index])
             campaign = str(output_data[cc.LGL_CAMPAIGN_NAME][index])
             # Skip if no ID or there is a campaign name.
-            if not constituent_id or (campaign and campaign != cc.EMPTY_CELL):
+            if not constituent_id or campaign != cc.GENERAL:
                 if not campaign or campaign == cc.EMPTY_CELL:
-                    output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL
+                    output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.GENERAL
                 continue
             donations = lgl.get_donations(constituent_id=constituent_id)
-            output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL
+            output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.GENERAL
             if not donations:
                 continue
-            recurring = self._is_recurring(output_data=output_data, index=index, donations=donations)
+            gift_date = output_data[cc.LGL_GIFT_DATE][index]
+            gift_amount = output_data[cc.LGL_GIFT_AMOUNT][index]
+            recurring = self._is_recurring(gift_date=gift_date, gift_amount=gift_amount,
+                                           donations=donations, constituent_id=constituent_id)
             if recurring:
                 output_data[cc.LGL_CAMPAIGN_NAME][index] = cc.STRIPE_GENERAL_RECURRING
         return output_data
 
-    def _is_recurring(self, output_data, index, donations):
-        log.debug('Entering for index {}'.format(index))
+    # This private method is a helper that allows an easy switch from one method to another.
+    def _is_recurring(self, gift_date, gift_amount, donations, constituent_id):
+        return self._is_recurring_33_days(gift_date=gift_date, gift_amount=gift_amount,
+                                          donations=donations, constituent_id=constituent_id)
+        # return self._is_recurring_during_prior_month(gift_date=gift_date, gift_amount=gift_amount,
+        #                                              donations=donations, constituent_id=constituent_id)
+
+    # This private method will determine if a donation is from a recurring donor by looking at prior donations
+    # for the same amount of money and within the last 33 days (approximately a month).
+    #
+    # Args -
+    #   output_data - the data for all donations
+    #   index - the index in the output_data we are processing
+    #   donations - the list of donations from the person represented by that index
+    #
+    # Returns - True if this is a recurring donation, False otherwise
+    def _is_recurring_33_days(self, gift_date, gift_amount, donations, constituent_id):
+        log.debug('Entering for constituent ID: {}'.format(constituent_id))
         recurs = False
-        gift_date = output_data[cc.LGL_GIFT_DATE][index]
-        gift_amount = output_data[cc.LGL_GIFT_AMOUNT][index]
         for donation in donations:
             if donation['amount'] != gift_amount:
                 continue
             donation_date_d = datetime.datetime.strptime(donation['date'], '%Y-%m-%d')
             lapsed_time = (gift_date - donation_date_d).days
-            recurs = lapsed_time <= 31  # Looking for similar donations in the last month.
+            recurs = lapsed_time <= 33  # Looking for similar donations in the last month or so.
+            log.debug('The donation date is {} and the lapsed time is {}.'.format(donation['date'], str(lapsed_time)))
             break
         return recurs
 
-    #   [{'id': 926177,
-    #     'constituent_id': 956522,
-    #     'gift_type_id': 1,
-    #     'gift_type_name': 'Gift',
-    #     'amount': 100.0,
-    #     'date': '2022-05-04',
-    #     'created_at': '2022-05-27T18:35:11Z',
-    #     'updated_at': '2022-06-10T12:40:36Z'},
-    #    {...}
-    #   ]
-
-    # {'Recommended By': {0: 'Online at FC', 1: 'Online at FC', 2: 'Online at FC'},
-    #  'Grant Id': {0: 17309716, 1: 17319469, 2: 17401868},
-    #  'Grant Amount': {0: 10, 1: 20, 2: 30, }, ...
+    # This private method will determine if a donation is from a recurring donor by looking at prior donations
+    # for the same amount of money and within the last month.
+    #
+    # Args -
+    #   output_data - the data for all donations
+    #   index - the index in the output_data we are processing
+    #   donations - the list of donations from the person represented by that index
+    #
+    # Returns - True if this is a recurring donation, False otherwise
+    def _is_recurring_during_prior_month(self, gift_date, gift_amount, donations, consituent_id):
+        log.debug('Entering for constituent ID: {}'.format(consituent_id))
+        recurs = False
+        gift_month = gift_date.month
+        last_month = gift_date.replace(month=(gift_month-1), day=1)
+        for donation in donations:
+            if donation['amount'] != gift_amount:
+                continue
+            donation_date = datetime.datetime.strptime(donation['date'], '%Y-%m-%d')
+            recurs = last_month <= donation_date < gift_date.replace(day=1)
+            log.debug('The gift date is {} and the donation date is {}.'.format(gift_date, donation['date']))
+            break
+        return recurs
 
     # ----- P R I V A T E   M E T H O D S ----- #
 
