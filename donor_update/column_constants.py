@@ -188,6 +188,7 @@ STRIPE_ROUNDUPCHARGETYPE_META = 'roundupChargeType (metadata)'
 STRIPE_PAGE_TYPE_META = 'page_type (metadata)'
 STRIPE_USER_TYPE_META = 'user_type (metadata)'
 STRIPE_WHY = 'why_did_you_choose_to_put_your_donat... (metadata)'
+STRIPE_ANON = 'anonymous_to_public (metadata)'
 # These are messages that could appear in the STRIPE description field:
 STRIPE_DESC_GIVE_LIVELY = 'Give Lively / Smart Donations'
 STRIPE_DESC_MEMORY = 'In Memory of'
@@ -384,6 +385,7 @@ STRIPE_MAP = {
     STRIPE_USER_TYPE_META: IGNORE_FIELD,
     STRIPE_ID: IGNORE_FIELD,
     STRIPE_WHY: IGNORE_FIELD,
+    STRIPE_ANON: IGNORE_FIELD,
 }
 
 QB_MAP = {
