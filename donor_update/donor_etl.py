@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "4.3"
+VERSION = "4.4"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -33,6 +33,7 @@ VERSION = "4.3"
 # 4.1 - Fix bug that overwrote legitimate campaign names
 # 4.2 - Fix _is_recurring bug caused by moving campaign name to work for all input files
 # 4.3 - Add new Stripe anonymous_to_public field
+# 4.4 - QB fixes for payment type, campaign name, and large check numbers
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()

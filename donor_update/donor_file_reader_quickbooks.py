@@ -159,13 +159,16 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
                 while self.input_data[CHECK_NUM_KEY][index] and \
                         str(self.input_data[CHECK_NUM_KEY][index]) != cc.EMPTY_CELL and \
                         index < num_of_elements:
+                    client_name = self.input_data[NAME_KEY][index]
                     desc = self.input_data[DESC_KEY][index]
                     if set(ignore_words).intersection(desc.lower().split()):
                         index += 1
+                        log.debug('Ignoring line for: "{}": "{}"'.format(client_name, desc))
                         continue
                     self.donor_data[cc.QB_DATE][donor_index] = donor_date
-                    if type(self.input_data[CHECK_NUM_KEY][index]) == int:
-                        self.donor_data[cc.QB_NUM][donor_index] = self.input_data[CHECK_NUM_KEY][index]
+                    check_num = self.input_data[CHECK_NUM_KEY][index]
+                    if check_num and (type(check_num) in (int, str)) and (check_num != cc.EMPTY_CELL):
+                        self.donor_data[cc.QB_NUM][donor_index] = int(check_num)
                     self.donor_data[cc.QB_DONOR][donor_index] = self._find_donor_name(index=index)
                     self.donor_data[cc.QB_AMOUNT][donor_index] = self.input_data[AMT_KEY][index]
                     # Clean up the desc and campaign.
@@ -179,6 +182,20 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
     # Return the map to be used by map_keys.
     def get_map(self):
         return cc.QB_MAP
+
+    # This method overrides the map_fields method in the parent class.  In addition to mapping fields based on
+    # self.donor_data, it will set the campaign name and payment type.
+    #
+    # Returns - same as parent method
+    def map_fields(self):
+        log.debug('Entering')
+        output_data = super().map_fields()
+        output_data[cc.LGL_PAYMENT_TYPE] = {}
+        indexes = output_data[cc.LGL_CONSTITUENT_ID].keys()
+        for index in indexes:
+            output_data[cc.LGL_CAMPAIGN_NAME][index] = 'General'
+            output_data[cc.LGL_PAYMENT_TYPE][index] = 'Check'
+        return output_data
 
     # This method will get the LGL IDs based on the name of the constituent.
     #
