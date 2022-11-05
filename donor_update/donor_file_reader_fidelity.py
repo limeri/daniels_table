@@ -37,7 +37,7 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
         for index in indexes:
             output_data[cc.LGL_CAMPAIGN_NAME][index] = 'General'
             output_data[cc.LGL_PAYMENT_TYPE][index] = 'ACH (Automated Clearing House)'
-            output_data[cc.LGL_GIFT_NOTE][index] = 'Grant ID # ' +\
+            output_data[cc.LGL_GIFT_NOTE][index] = 'Via Fidelity Charitable.  Grant ID # ' +\
                                                    str(self.donor_data[cc.FID_GRANT_ID][index]) +\
                                                    '; ACH# ' +\
                                                    str(self.donor_data[cc.FID_ACH_GROUP_ID][index])
