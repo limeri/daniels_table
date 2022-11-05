@@ -86,18 +86,19 @@ def get_file_reader(file_path):
             log.debug('------------------------- Quickbooks Comparison')
             debug_key_compare(input_keys=input_keys, map_keys=cc.QB_MAP.keys())
     elif type(input_data) == list:
-        input_keys = input_data[11]  # For Benevity, the column names are on line 12.  Compare them to the Benevity map.
-        if set(input_keys) <= set(cc.BENEVITY_MAP.keys()):
+        benevity_keys = input_data[11]  # For Benevity, the column names are on line 12.
+        yc_keys = input_data[0]  # For YourCause, the column names are on line 12.
+        if set(benevity_keys) <= set(cc.BENEVITY_MAP.keys()):
             file_reader = benevity_reader.DonorFileReaderBenevity()
-        elif set(input_keys) <= set(cc.YC_MAP.keys()):
+        elif set(yc_keys) <= set(cc.YC_MAP.keys()):
             file_reader = yc_reader.DonorFileReaderYourCause()
         else:
             # If we get here, then we didn't match any input.  For diagnostic purposes, compare each of the map
             # keys to the input keys.
             log.debug('------------------------- Benevity Comparison')
-            debug_key_compare(input_keys=input_keys, map_keys=cc.BENEVITY_MAP.keys())
+            debug_key_compare(input_keys=benevity_keys, map_keys=cc.BENEVITY_MAP.keys())
             log.debug('------------------------- YourCause Comparison')
-            debug_key_compare(input_keys=input_keys, map_keys=cc.YC_MAP.keys())
+            debug_key_compare(input_keys=yc_keys, map_keys=cc.YC_MAP.keys())
     else:
         error_msg = 'The data read from the file "{}" was not recognized.  This is a serious error.'.format(file_path)
         error_msg += 'Please save this file for evaluation and contact the developer.'
@@ -108,8 +109,8 @@ def get_file_reader(file_path):
         file_reader.input_file = file_path
         file_reader.input_data = input_data
     else:
-        log.error(ml.error('The input keys "{}" for file "{}" did not match any maps.  This data cannot be processed!'.
-                           format(input_keys, file_path)))
+        log.error(ml.error('The type of input file (Stripe, etc) for "{}" was not found.  '.format(file_path) +
+                           'This data cannot be processed!'))
 
     return file_reader
 

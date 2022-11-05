@@ -23,6 +23,26 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
     def get_map(self):
         return cc.FIDELITY_MAP
 
+    # This method overrides the map_fields method in the parent class.  In addition to mapping fields based on
+    # self.donor_data, it will set the campaign name, payment type, and gift note.
+    #
+    # Returns - same as parent method
+    def map_fields(self):
+        log.debug('Entering')
+        output_data = super().map_fields()
+        output_data[cc.LGL_CAMPAIGN_NAME] = {}
+        output_data[cc.LGL_PAYMENT_TYPE] = {}
+        output_data[cc.LGL_GIFT_NOTE] = {}
+        indexes = output_data[cc.LGL_CONSTITUENT_ID].keys()
+        for index in indexes:
+            output_data[cc.LGL_CAMPAIGN_NAME][index] = 'General'
+            output_data[cc.LGL_PAYMENT_TYPE][index] = 'ACH (Automated Clearing House)'
+            output_data[cc.LGL_GIFT_NOTE][index] = 'Via Fidelity Charitable.  Grant ID # ' +\
+                                                   str(self.donor_data[cc.FID_GRANT_ID][index]) +\
+                                                   '; ACH# ' +\
+                                                   str(self.donor_data[cc.FID_ACH_GROUP_ID][index])
+        return output_data
+
     # This method will get the LGL IDs based on the name of the constituent.
     #
     # Returns - a dict of LGL IDs.  The keys of the dict will be in the format: {0: id_1, 1: id_2, ...}
