@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "4.4"
+VERSION = "4.6"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -34,6 +34,14 @@ VERSION = "4.4"
 # 4.2 - Fix _is_recurring bug caused by moving campaign name to work for all input files
 # 4.3 - Add new Stripe anonymous_to_public field
 # 4.4 - QB fixes for payment type, campaign name, and large check numbers
+# 4.5 Fixes for Fidelity:
+#       - Fidelity: "Gift Note" should stay as "DO NOT IMPORT - Special Purpose".
+#       - Fidelity: "Gift Note" should a combination of the Grant ID and the ACH Group ID columns in the format:
+#                   Via Fidelity Charitable. Grant ID # <###>; ACH # <###>
+#       - Fidelity: Add "Payment Type" column and set to "ACH (Automated Clearing House)".
+#       - Fidelity: Add "Campaign Name" column and set to "General".
+#       - Fidelity: Addresses that have a direction (like West) should be abbreviated to the first letter (W).
+# 4.6 Change lane abbrev to ln and add Suite -> Ste
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
