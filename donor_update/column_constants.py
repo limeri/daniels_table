@@ -14,7 +14,7 @@ LGL_API_STATE = 'state'
 LGL_API_POSTAL_CODE = 'postal_code'
 LGL_API_EMAIL = 'email_addresses'
 
-# LGL Dictonary Fields -- Some of the fields will not be imported when donations are imported.  They have an
+# LGL Dictonary Fields -- Some fields will not be imported when donations are imported.  They have an
 # additional _DNI constant that is used by the maps.
 LGL_CONSTITUENT_ID = 'LGL Constituent ID'
 LGL_FULL_NAME = 'Full Name'
@@ -99,7 +99,7 @@ BEN_TOTAL_DONATION_TO_BE_ACKNOWLEDGED = 'Total Donation to be Acknowledged'
 BEN_TRANSACTION_ID = 'Transaction ID'
 
 # Stripe input fields
-# Our friends at Stripe have modified some of the key names.  For instance, "seller_message" became "Seller Message".
+# Our friends at Stripe have modified some key names.  For instance, "seller_message" became "Seller Message".
 # Since we don't know if that will continue, we've added them as new names with an "_2" after them (SELLER_MESSAGE_2).
 # Unfortunately, this will mean some extra processing in the donor_file_reader_stripe module to discover the key that
 # is actually in the data.  Hopefully, they don't make a habit out of these changes.
@@ -209,12 +209,13 @@ QB_CLR = 'Clr'
 QB_AMOUNT = 'Amount'
 
 # YourCause input fields
+YC_COMPANIES = 'Companies'
 YC_ID = 'Id'
 YC_AMOUNT = 'Amount'
 YC_GROSSAMOUNT = 'GrossAmount'
-YC_CHECKFEE = 'CheckFeeDetails CheckFee'
-YC_PERCENTWITHHELD = 'CheckFeeDetails PercentWithheld'
-YC_CAPAPPLIED = 'CheckFeeDetails CapApplied'
+YC_CHECKFEEDETAILS_CHECKFEE = 'CheckFeeDetails CheckFee'
+YC_CHECKFEEDETAILS_PERCENTWITHHELD = 'CheckFeeDetails PercentWithheld'
+YC_CHECKFEEDETAILS_CAPAPPLIED = 'CheckFeeDetails CapApplied'
 YC_CURRENCY = 'Currency'
 YC_ISACH = 'IsAch'
 YC_DATECREATED = 'DateCreated'
@@ -237,6 +238,12 @@ YC_PAYMENTTYPE_DESCRIPTION = 'PaymentType Description'
 YC_REISSUEPAYMENTID = 'ReissuePaymentId'
 YC_REISSUEPAYMENTNUMBER = 'ReissuePaymentNumber'
 YC_PROCESSINGPARTNERNAME = 'ProcessingPartnerName'
+YC_DISBURSEMENTAMOUNT = 'DisbursementAmount'
+YC_DISBURSEMENTGROSSAMOUNT = 'DisbursementGrossAmount'
+YC_DISBURSEMENTCURRENCYCODE = 'DisbursementCurrencyCode'
+YC_DISBURSEMENTCHECKFEEDETAILS_CHECKFEE = 'DisbursementCheckFeeDetails CheckFee'
+YC_DISBURSEMENTCHECKFEEDETAILS_PERCENTWITHHELD = 'DisbursementCheckFeeDetails PercentWithheld'
+YC_DISBURSEMENTCHECKFEEDETAILS_CAPAPPLIED = 'DisbursementCheckFeeDetails CapApplied'
 
 # ----- These are the maps for the input fields to the LGL fields ----- #
 
@@ -395,23 +402,23 @@ QB_MAP = {
     QB_DONOR: LGL_FULL_NAME_DNI,
     QB_VENDOR: LGL_FULL_NAME_DNI,
     QB_MEMO_DESCRIPTION: LGL_GIFT_NOTE,
-    LGL_CAMPAIGN_NAME: LGL_CAMPAIGN_NAME,
     QB_AMOUNT: LGL_GIFT_AMOUNT,
+    LGL_CAMPAIGN_NAME: LGL_CAMPAIGN_NAME,
     # --- These fields are ignored --- #
     QB_TRANSACTION_TYPE: IGNORE_FIELD,
     QB_CLR: IGNORE_FIELD,
 }
-
 YC_MAP = {
     YC_AMOUNT: LGL_GIFT_AMOUNT,
     YC_DATECREATED: LGL_GIFT_DATE,
     YC_PROCESSINGPARTNERNAME: LGL_FULL_NAME_DNI,
     # --- These fields are ignored --- #
+    YC_COMPANIES: IGNORE_FIELD,
     YC_ID: IGNORE_FIELD,
     YC_GROSSAMOUNT: IGNORE_FIELD,
-    YC_CHECKFEE: IGNORE_FIELD,
-    YC_PERCENTWITHHELD: IGNORE_FIELD,
-    YC_CAPAPPLIED: IGNORE_FIELD,
+    YC_CHECKFEEDETAILS_CHECKFEE: IGNORE_FIELD,
+    YC_CHECKFEEDETAILS_PERCENTWITHHELD: IGNORE_FIELD,
+    YC_CHECKFEEDETAILS_CAPAPPLIED: IGNORE_FIELD,
     YC_CURRENCY: IGNORE_FIELD,
     YC_ISACH: IGNORE_FIELD,
     YC_PAYMENTNUMBER: IGNORE_FIELD,
@@ -432,4 +439,10 @@ YC_MAP = {
     YC_PAYMENTTYPE_DESCRIPTION: IGNORE_FIELD,
     YC_REISSUEPAYMENTID: IGNORE_FIELD,
     YC_REISSUEPAYMENTNUMBER: IGNORE_FIELD,
+    YC_DISBURSEMENTAMOUNT: IGNORE_FIELD,
+    YC_DISBURSEMENTGROSSAMOUNT: IGNORE_FIELD,
+    YC_DISBURSEMENTCURRENCYCODE: IGNORE_FIELD,
+    YC_DISBURSEMENTCHECKFEEDETAILS_CHECKFEE: IGNORE_FIELD,
+    YC_DISBURSEMENTCHECKFEEDETAILS_PERCENTWITHHELD: IGNORE_FIELD,
+    YC_DISBURSEMENTCHECKFEEDETAILS_CAPAPPLIED: IGNORE_FIELD,
 }

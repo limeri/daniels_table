@@ -11,7 +11,6 @@ import lgl_api
 SAMPLE_FILE = 'sample_files\\benevity.csv'
 log = logging.getLogger()
 
-PAYMENT_STATUS = 10
 GOOD_PAYMENT_STATUS = 'Cleared'
 
 
@@ -72,8 +71,9 @@ class DonorFileReaderYourCause(donor_file_reader.DonorFileReader):
             self.donor_data[label] = {}
 
         # Add the donor rows to the data.
+        payment_status_index = column_labels.index(cc.YC_PAYMENTSTATUS)
         for row in donor_rows:  # Start with a row of donor data e.g. ['Liberty Mutual', 'DANIELS TABLE INC', ...]
-            if row[PAYMENT_STATUS] != GOOD_PAYMENT_STATUS:
+            if row[payment_status_index] != GOOD_PAYMENT_STATUS:
                 continue
             for label in column_labels:  # Now get a label e.g. 'Company'
                 row_index = donor_rows.index(row)
@@ -83,6 +83,19 @@ class DonorFileReaderYourCause(donor_file_reader.DonorFileReader):
     # Return the map to be used by map_keys.
     def get_map(self):
         return cc.YC_MAP
+
+    # This method overrides the map_fields method in the parent class.  In addition to mapping fields based on
+    # self.donor_data, it will set the campaign name, payment type, and gift note.
+    #
+    # Returns - same as parent method
+    def map_fields(self):
+        log.debug('Entering')
+        output_data = super().map_fields()
+        output_data[cc.LGL_CAMPAIGN_NAME] = {}
+        indexes = output_data[cc.LGL_CONSTITUENT_ID].keys()
+        for index in indexes:
+            output_data[cc.LGL_CAMPAIGN_NAME][index] = 'General'
+        return output_data
 
     # This method will get the LGL IDs based on the name of the constituent.
     #
