@@ -126,8 +126,8 @@ class ConstituentDataValidator:
 
         # Convert various road abbreviations.  Found this online.  It's quite clever.
         # https://stackoverflow.com/questions/6116978/how-to-replace-multiple-substrings-of-a-string
-        road_translations = {'street': 'st', 'drive': 'dr', 'road': 'rd', 'lane': 'la', 'circle': 'cir',
-                             'avenue': 'ave', 'boulevard': 'blvd', 'terrace': 'ter', 'court': 'ct',
+        road_translations = {'street': 'st', 'drive': 'dr', 'road': 'rd', 'lane': 'ln', 'circle': 'cir',
+                             'avenue': 'ave', 'boulevard': 'blvd', 'terrace': 'ter', 'court': 'ct', 'suite': 'ste',
                              'north': 'n', 'south': 's', 'east': 'e', 'west': 'w'}
         road_translations = dict((re.escape(k), v) for k, v in road_translations.items())
         pattern = re.compile(r'\b' + r'\b|\b'.join(road_translations.keys()) + r'\b')
