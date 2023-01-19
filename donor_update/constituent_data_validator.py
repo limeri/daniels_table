@@ -45,7 +45,8 @@ class ConstituentDataValidator:
         self._constituent_data = {}
 
     # This method will validate that the street address read from an input donor file (such as Stripe) matches
-    # the address in LGL.
+    # the address in LGL.  Note that it validates a single address.  The calling method is expected to loop
+    # over the constituents.
     #
     # Args -
     #   constituent_id - the LGL ID of the constituent whose address is being validated

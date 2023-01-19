@@ -41,6 +41,8 @@ class DonorFileReader:
         self.variance_file = ''
         self.campaigns = {}
         self._get_campaigns()
+        self._check_addresses = True
+        self._check_names = True
 
     @property
     def input_data(self):
@@ -51,6 +53,22 @@ class DonorFileReader:
         self._input_data = file_data
         if self.input_data:
             self.initialize_donor_data()
+
+    @property
+    def check_addresses(self):
+        return self._check_addresses
+
+    @check_addresses.setter
+    def check_addresses(self, yes_or_no: bool):
+        self._check_addresses = yes_or_no
+
+    @property
+    def check_names(self):
+        return self._check_addresses
+
+    @check_names.setter
+    def check_names(self, yes_or_no: bool):
+        self._check_names = yes_or_no
 
     # This method makes a default initialization of self.donor_data.
     #

@@ -110,7 +110,8 @@ def get_file_reader(file_path):
         file_reader.input_data = input_data
     else:
         log.error(ml.error('The type of input file (Stripe, etc) for "{}" was not found.  '.format(file_path) +
-                           'This data cannot be processed!'))
+                           'This data cannot be processed!  Please note that Fidelity, Stripe, and QB are expected ' +
+                           'to be Excel files, while Benevity and YourCause are expected to be CSV files.'))
 
     return file_reader
 

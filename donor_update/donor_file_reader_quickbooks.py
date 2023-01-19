@@ -167,8 +167,13 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
                         continue
                     self.donor_data[cc.QB_DATE][donor_index] = donor_date
                     check_num = self.input_data[CHECK_NUM_KEY][index]
-                    if check_num and (type(check_num) in (int, str)) and (check_num != cc.EMPTY_CELL):
+                    if check_num:
                         self.donor_data[cc.QB_NUM][donor_index] = int(check_num)
+                        # if type(check_num) == int:
+                        #     self.donor_data[cc.QB_NUM][donor_index] = check_num
+                        # elif (type(check_num) == str) and (check_num != cc.EMPTY_CELL):  # Note that this keeps hyphens
+                        #     num = int(''.join(x for x in check_num if x.isdigit()) or x == '-')
+                        #     self.donor_data[cc.QB_NUM][donor_index] = num
                     self.donor_data[cc.QB_DONOR][donor_index] = self._find_donor_name(index=index)
                     self.donor_data[cc.QB_AMOUNT][donor_index] = self.input_data[AMT_KEY][index]
                     # Clean up the desc and campaign.

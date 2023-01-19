@@ -87,13 +87,13 @@ class LglApi:
         if 'items' not in data or not data['items']:
             search_terms = re.sub(r'([A-Z])([A-Z])', r'\1 \2', search_terms)  # Put spaces between consecutive capitals
             data = self._lgl_name_search(name=search_terms)
-        if 'items' not in data or not data['items']:
+        if ('items' not in data or not data['items']) and ('bank' not in search_terms.lower()):
             search_terms = re.sub(r'\B[A-Z]', r' \g<0>', search_terms)  # Handle caps without a space prior
             data = self._lgl_name_search(name=search_terms)
-        if 'items' not in data or not data['items']:
-            search_terms = re.sub(r'(\w*)\b[a-zA-Z]\b(\w*)', r'\1\2', search_terms)  # Handle caps without a space prior
+        if ('bank' not in search_terms.lower()) and ('bank' not in search_terms.lower()):
+            search_terms = re.sub(r'(\w*)\b[a-zA-Z]\b(\w*)', r'\1\2', search_terms)  # Remove single letter initials
             data = self._lgl_name_search(name=search_terms)
-        if 'items' not in data or not data['items']:
+        if ('items' not in data or not data['items']) and ('bank' not in search_terms.lower()):
             # Try to remove middle names by removing every second word (Mary Louise Parker becomes Mary Parker).
             search_terms = re.sub(r'(\b\w+) \b\w+ (\b\w+)', r'\1 \2', search_terms)
             data = self._lgl_name_search(name=search_terms)

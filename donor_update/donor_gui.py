@@ -10,7 +10,9 @@ import sys
 class DonorGui:
     PADDING = ((0, 0), (5, 15))
     INPUT_FILE_HELP_TEXT = sg.Text('Input files are the .csv or .xlsx files created from input sources like Stripe ' +
-                                   'or Benevity.\nYou may select one or more input files to be analyzed.',
+                                   'or Benevity.\nYou may select one or more input files to be analyzed.\nPlease ' +
+                                   'note that Fidelity, Stripe, and QB are expected to be Excel files, while ' +
+                                   'Benevity and YourCause are expected to be CSV files.',
                                    text_color='black')
     INPUT_FILE_TEXT = sg.Text('What input file(s) do you want to analyze?', text_color='yellow')
     DISPLAY_FILE_TEXT = sg.Text('<No files have been selected>', key='input_files_text',

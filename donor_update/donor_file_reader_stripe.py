@@ -69,9 +69,9 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
         email_addresses = self.donor_data[customer_email_key]
         lgl_ids = {}
         ids_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
-        # If more than 100 names, sleep each iteration cuz LGL doesn't allow more than 200 transactions every 5 mins.
+        # If more than 100 names, sleep each iteration cuz LGL doesn't allow more than 300 transactions every 5 mins.
         sleep_time = 0
-        if len(donor_names.keys()) > 100:
+        if len(donor_names.keys()) > 250:
             sleep_time = 3
         for index in donor_names.keys():
             # If there is no name, you get a float not_a_number (nan) value, so cast everything to string.
