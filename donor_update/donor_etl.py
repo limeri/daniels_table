@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "4.6"
+VERSION = "4.7"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -42,6 +42,13 @@ VERSION = "4.6"
 #       - Fidelity: Add "Campaign Name" column and set to "General".
 #       - Fidelity: Addresses that have a direction (like West) should be abbreviated to the first letter (W).
 # 4.6 Change lane abbrev to ln and add Suite -> Ste
+# 4.7 Several bug fixes:
+# - Increased constituents to 250 every 5 mins because LGL increased their tolerance to 300 calls/5 mins.
+# - Issue 9: New YourCause format.
+# - Issue 12: Take only numbers from the check number field in QB.
+# - Issue 13: Added messaging to GUI and error msg about expected file formats by input source.
+# - Issue 14: Added code to not remove characters from the string if "bank" is in the search term.
+# - Fixed crash bug in Fidelity when name is not specified.
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
@@ -161,7 +168,9 @@ def reformat_data(input_files, output_file, variance_file):
             donor_file_reader.variance_file = variance_file
 
         except ValueError:
-            log.error(dd.error('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.'.
+            log.error(dd.error('The file "{}" can not be read.  Only "xlsx" and "csv" files can be used.\n' +
+                               'Please note that Fidelity, Stripe, and QB are expected to be Excel files, ' +
+                               'while Benevity and YourCause are expected to be CSV files.'.
                                format(input_file)))
             continue
         try:

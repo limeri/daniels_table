@@ -53,8 +53,8 @@ class DonorFileReaderFidelity(donor_file_reader.DonorFileReader):
         lgl_ids = {}
         names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
         for index in donor_names.keys():
-            name = donor_names[index]
-            if not name.strip() and self.donor_data[cc.FID_GIVING_ACCOUNT_NAME][index]:
+            name = str(donor_names[index]).strip()
+            if not name and self.donor_data[cc.FID_GIVING_ACCOUNT_NAME][index]:
                 name = self.donor_data[cc.FID_GIVING_ACCOUNT_NAME][index]
                 self.donor_data[cc.FID_ADDRESSEE_NAME][index] = name  # Add the giving acct name into the results
             # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
