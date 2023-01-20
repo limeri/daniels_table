@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "4.7"
+VERSION = "4.8"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -49,6 +49,7 @@ VERSION = "4.7"
 # - Issue 13: Added messaging to GUI and error msg about expected file formats by input source.
 # - Issue 14: Added code to not remove characters from the string if "bank" is in the search term.
 # - Fixed crash bug in Fidelity when name is not specified.
+# 4.8 Issue 12: Allow hyphens in check number field for QB.
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
