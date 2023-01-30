@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "4.8"
+VERSION = "4.9"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -50,6 +50,12 @@ VERSION = "4.8"
 # - Issue 14: Added code to not remove characters from the string if "bank" is in the search term.
 # - Fixed crash bug in Fidelity when name is not specified.
 # 4.8 Issue 12: Allow hyphens in check number field for QB.
+# 4.9 Sort messages, fix LGL calls, strings that match > 1 ID, and name suffixes.
+# - Messages in the window at the end will be displayed in alphabetical order.
+# - Issue 15: Improve how calls to LGL are counted so that it works for all calls.  It uses a singleton class to
+#             count the number of calls and pause if needed.
+# - Issue 16: No longer return an ID if there is more than one match for the search string.
+# - Issue 17: Extra defensive code when searching for names containing the strings "Jr", "Sr", "I", "II", "III".
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()

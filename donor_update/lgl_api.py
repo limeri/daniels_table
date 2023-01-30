@@ -18,6 +18,7 @@ import time
 
 import column_constants as cc
 import display_data
+import lgl_call_tracker
 import sample_data as sample
 
 from configparser import ConfigParser
@@ -29,7 +30,7 @@ URL_CONSTITUENT_DONATIONS = 'https://api.littlegreenlight.com/api/v1/constituent
 
 log = logging.getLogger()
 ml = display_data.DisplayData()
-
+call_tracker = lgl_call_tracker.LglCallTracker()
 
 class LglApi:
 
@@ -75,6 +76,8 @@ class LglApi:
             name = name.title()
         # Remove noise words from the search terms.
         noise_words = ['and', 'or', 'fund', '&']
+        # This list of words will be used to avoid the last couple tests as there can be errors otherwise.
+        middle_words = ['bank', 'jr', 'sr', ' i', ' ii', ' iii']
         query_words = name.split(' ')
         name_words = [word.replace('.', '') for word in query_words if word.lower() not in noise_words]
         search_terms = ' '.join(name_words)
@@ -90,10 +93,10 @@ class LglApi:
         if ('items' not in data or not data['items']) and ('bank' not in search_terms.lower()):
             search_terms = re.sub(r'\B[A-Z]', r' \g<0>', search_terms)  # Handle caps without a space prior
             data = self._lgl_name_search(name=search_terms)
-        if ('bank' not in search_terms.lower()) and ('bank' not in search_terms.lower()):
+        if ('items' not in data or not data['items']) and any(word in search_terms.lower() for word in middle_words):
             search_terms = re.sub(r'(\w*)\b[a-zA-Z]\b(\w*)', r'\1\2', search_terms)  # Remove single letter initials
             data = self._lgl_name_search(name=search_terms)
-        if ('items' not in data or not data['items']) and ('bank' not in search_terms.lower()):
+        if ('items' not in data or not data['items']) and any(word in search_terms.lower() for word in middle_words):
             # Try to remove middle names by removing every second word (Mary Louise Parker becomes Mary Parker).
             search_terms = re.sub(r'(\b\w+) \b\w+ (\b\w+)', r'\1 \2', search_terms)
             data = self._lgl_name_search(name=search_terms)
@@ -113,8 +116,7 @@ class LglApi:
             file_name = 'Input File Unknown'
         data = self.find_constituent(name=name, email=email)
         if 'items' in data.keys() and data['items']:
-            cid = data['items'][0]['id']
-            log.debug('The constituent ID is {}.'.format(cid))
+            cid = ''
             if len(data['items']) > 1:
                 msg = 'The name "{}"'.format(name)
                 if email:
@@ -125,6 +127,9 @@ class LglApi:
                     msg += sep + ' "' + constituent['addressee'] + '" (' + str(constituent['id']) + ')'
                     sep = ','
                 log.info(ml.save(msg))
+            else:
+                cid = data['items'][0]['id']
+                log.debug('The constituent ID is {}.'.format(cid))
         else:
             cid = ""
             log.info(ml.save('The constituent "{}" from the file "{}" was not found.'.format(name, file_name)))
@@ -229,13 +234,16 @@ class LglApi:
         if response.status_code != 200:
             self._handle_error(error_code=response.status_code, url=url, params=url_params)
         if hasattr(self, 'status_code') and self.status_code and self.status_code == 429:
+            fatal_msg = 'Little Green Light has exceeded the number of calls it allows in a five minute period '\
+                        + 'and is not responding.  Please try again later.'
             self._handle_error(error_code=self.status_code,
                                url=url,
                                params=url_params,
                                fatal=True,
-                               fatal_error_msg='Little Green Light is not responding.  Please try again later.')
+                               fatal_error_msg=fatal_msg)
         data = response.json()
         log.debug('The json response is: {}'.format(data))
+        call_tracker.increment_call_count()
         return data
 
     # This private method is a generic error handler for calls to LGL.  It will document the error and stop
@@ -287,7 +295,8 @@ def run_find_constituent_test():
 # Test that the find_constituent_id_by_name method is working.
 def run_find_constituent_id_by_name_test():
     lgl = LglApi()
-    cid = lgl.find_constituent_id(name="Carolyn and Andy Limeri")
+    # cid = lgl.find_constituent_id(name="Carolyn and Andy Limeri")
+    cid = lgl.find_constituent_id(name="Fidelity")
     log.debug("The ID is: {}".format(cid))
 
 
@@ -314,10 +323,10 @@ if __name__ == '__main__':
     log.addHandler(console_handler)
     log.setLevel(logging.DEBUG)
 
-    run_find_constituent_test()
-    log.debug('-----')
+    # run_find_constituent_test()
+    # log.debug('-----')
     run_find_constituent_id_by_name_test()
-    log.debug('-----')
-    run_get_constituent_info_test()
-    log.debug('-----')
-    run_get_donations_test()
+    # log.debug('-----')
+    # run_get_constituent_info_test()
+    # log.debug('-----')
+    # run_get_donations_test()
