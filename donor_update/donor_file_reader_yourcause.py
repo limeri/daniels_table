@@ -11,7 +11,6 @@ import lgl_api
 SAMPLE_FILE = 'sample_files\\benevity.csv'
 log = logging.getLogger()
 
-PAYMENT_STATUS = 10
 GOOD_PAYMENT_STATUS = 'Cleared'
 
 
@@ -72,8 +71,9 @@ class DonorFileReaderYourCause(donor_file_reader.DonorFileReader):
             self.donor_data[label] = {}
 
         # Add the donor rows to the data.
+        payment_status_index = column_labels.index(cc.YC_PAYMENT_STATUS)
         for row in donor_rows:  # Start with a row of donor data e.g. ['Liberty Mutual', 'DANIELS TABLE INC', ...]
-            if row[PAYMENT_STATUS] != GOOD_PAYMENT_STATUS:
+            if row[payment_status_index] != GOOD_PAYMENT_STATUS:
                 continue
             for label in column_labels:  # Now get a label e.g. 'Company'
                 row_index = donor_rows.index(row)
@@ -84,22 +84,37 @@ class DonorFileReaderYourCause(donor_file_reader.DonorFileReader):
     def get_map(self):
         return cc.YC_MAP
 
+    # This method overrides the map_fields method in the parent class.  In addition to mapping fields based on
+    # self.donor_data, it will set the campaign name, payment type, and gift note.
+    #
+    # Returns - same as parent method
+    def map_fields(self):
+        log.debug('Entering')
+        output_data = super().map_fields()
+        output_data[cc.LGL_CAMPAIGN_NAME] = {}
+        indexes = output_data[cc.LGL_CONSTITUENT_ID].keys()
+        for index in indexes:
+            output_data[cc.LGL_CAMPAIGN_NAME][index] = 'General'
+        return output_data
+
     # This method will get the LGL IDs based on the name of the constituent.
     #
     # Returns - a dict of LGL IDs.  The keys of the dict will be in the format: {0: id_1, 1: id_2, ...}
     def get_lgl_constituent_ids(self):
         log.debug('Entering')
         lgl = lgl_api.LglApi()
-        donor_names = self.donor_data[cc.YC_PROCESSINGPARTNERNAME]
+        donor_names = self.donor_data[cc.YC_DONOR_FULL_NAME]
+        donor_emails = self.donor_data[cc.YC_DONOR_EMAIL_ADDRESS]
         lgl_ids = {}
         names_found = {}  # This is to make the loop more efficient by remembering the IDs of names already found.
         for index in donor_names.keys():
             name = donor_names[index]
+            email = donor_emails[index]
             # If the name is found names_found, then retrieve the ID from the dict instead of making a call.
             if name in names_found.keys():
                 cid = names_found[name]
             else:
-                cid = lgl.find_constituent_id(name=name, file_name=self.input_file)
+                cid = lgl.find_constituent_id(name=name, email=email, file_name=self.input_file)
             lgl_ids[index] = cid
             names_found[name] = cid
         return lgl_ids

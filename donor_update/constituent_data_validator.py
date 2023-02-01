@@ -181,7 +181,7 @@ class ConstituentDataValidator:
             # variance.
             if not formatted_input_address[cc.LGL_API_STREET]:
                 return variance
-            variance.append('No street addresses were found in LGL')
+            variance.append('Street address')
         else:
             lgl_address = lgl_data[cc.LGL_API_ADDRESS][0]
             input_street = formatted_input_address[cc.LGL_API_STREET]
