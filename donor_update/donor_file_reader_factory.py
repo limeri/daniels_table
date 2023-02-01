@@ -86,8 +86,8 @@ def get_file_reader(file_path):
             log.debug('------------------------- Quickbooks Comparison')
             debug_key_compare(input_keys=input_keys, map_keys=cc.QB_MAP.keys())
     elif type(input_data) == list:
-        benevity_keys = input_data[11]  # For Benevity, the column names are on line 12.
-        yc_keys = input_data[0]  # For YourCause, the column names are on line 12.
+        benevity_keys = input_data[cc.BEN_LABEL_ROW]
+        yc_keys = input_data[cc.YC_LABEL_ROW]
         if set(benevity_keys) <= set(cc.BENEVITY_MAP.keys()):
             file_reader = benevity_reader.DonorFileReaderBenevity()
         elif set(yc_keys) <= set(cc.YC_MAP.keys()):

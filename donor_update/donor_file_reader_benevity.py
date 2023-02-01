@@ -11,10 +11,14 @@ import lgl_api
 SAMPLE_FILE = 'sample_files\\benevity.csv'
 log = logging.getLogger()
 
-
 class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
     # self.input_data is declared by the __init__ module of donor_file_reader.  In this module, it will be a list
     # similar to the sample below:
+    #
+    #
+    # NOTE: In the latest Benevity report, the Donations section at the top and the totals at the bottom have been
+    # removed.  The column titles are on the first line of the file, the data is on the next line, and that is the
+    # full contents of the report.  The columns remain the same.
     #
     # [['Donations Report', ''],
     #  ['#-------------------------------------------', ''],
@@ -84,12 +88,15 @@ class DonorFileReaderBenevity(donor_file_reader.DonorFileReader):
         log.debug('Entering')
         # Separate the donor data from everything else (exclude the labels).
         donor_rows = []
-        i = 12  # Start at line 13 (exclude the labels)
-        while self.input_data[i][0] != 'Totals':
+        for i in range(cc.BEN_DATA_START_ROW, len(self.input_data)-1):
             donor_rows.append(self.input_data[i])
-            i += 1
+# These rows are for the old format where the data started at line 12 and there were totals at the end.
+        # i = cc.BEN_DATA_START_ROW
+        # while self.input_data[i][0] != 'Totals':
+        #     donor_rows.append(self.input_data[i])
+        #     i += 1
         # Initialize the dict from labels (row 12 of the input_data).
-        column_labels = self.input_data[11]
+        column_labels = self.input_data[cc.BEN_LABEL_ROW]
         for label in column_labels:
             self.donor_data[label] = {}
         # Add the donor rows to the data.
