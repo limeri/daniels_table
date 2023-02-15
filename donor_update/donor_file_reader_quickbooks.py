@@ -160,7 +160,7 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
                         str(self.input_data[CHECK_NUM_KEY][index]) != cc.EMPTY_CELL and \
                         index < num_of_elements:
                     client_name = self.input_data[NAME_KEY][index]
-                    desc = self.input_data[DESC_KEY][index]
+                    desc = str(self.input_data[DESC_KEY][index]).strip()
                     if set(ignore_words).intersection(desc.lower().split()):
                         index += 1
                         log.debug('Ignoring line for: "{}": "{}"'.format(client_name, desc))
@@ -177,7 +177,7 @@ class DonorFileReaderQuickbooks(donor_file_reader.DonorFileReader):
                     self.donor_data[cc.QB_AMOUNT][donor_index] = self.input_data[AMT_KEY][index]
                     # Clean up the desc and campaign.
                     self.donor_data[cc.LGL_CAMPAIGN_NAME][donor_index] = desc
-                    if desc.strip() != 'donation':
+                    if desc != 'donation' and desc != cc.EMPTY_CELL:
                         self.donor_data[cc.QB_MEMO_DESCRIPTION][donor_index] = desc
                     donor_index += 1
                     index += 1

@@ -75,7 +75,8 @@ class DonorGui:
     #
     # Returns - none
     def display_popup(self, messages):
-        messages.sort()  # Put the messages into alphabetical order to make it easier to read them.
+        # Put the warning messages into alphabetical order to make it easier to read them.
+        messages[1:len(messages)-1] = sorted(messages[1:len(messages)-1])
         width = max(len(max(messages, key=len)), 40)  # Minimum width for the text box is 40 chars.
         hscroll = False
         if width > 100:  # Keep the width reasonable and add a horizontal scrollbar if needed.
