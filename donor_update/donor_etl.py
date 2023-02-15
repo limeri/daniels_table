@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "4.10"
+VERSION = "4.11"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -57,6 +57,7 @@ VERSION = "4.10"
 # - Issue 16: No longer return an ID if there is more than one match for the search string.
 # - Issue 17: Extra defensive code when searching for names containing the strings "Jr", "Sr", "I", "II", "III".
 # 4.10 - New formats for Benevity and YourCause created
+# 4.11 - Issue 19 (correct message sorting), Issue 20: QB processing error if description field is empty
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
