@@ -19,6 +19,27 @@ INPUT_FILES = {
 ID_LIMERI = '956522'
 ID_ALI = '956957'
 ID_COLE = '959732'
+ID_ALBANO = '951007'
+
+NAME_LIMERI = {
+    cc.LGL_API_FIRST_NAME: 'Carolyn',
+    cc.LGL_API_LAST_NAME: 'Limeri'
+}
+
+NAME_LIMERI_BAD = {
+    cc.LGL_API_FIRST_NAME: 'Andy',
+    cc.LGL_API_LAST_NAME: 'Limer'
+}
+
+NAME_ALBANO = {
+    cc.LGL_API_FIRST_NAME: 'Joseph',
+    cc.LGL_API_LAST_NAME: 'Albano'
+}
+
+NAME_ALBANO_BAD = {
+    cc.LGL_API_FIRST_NAME: 'Joe',
+    cc.LGL_API_LAST_NAME: 'Albano'
+}
 
 ADDRESS_LIMERI = {
     cc.LGL_ADDRESS_LINE_1: '29 Dartmouth Dr.',
@@ -78,4 +99,24 @@ ADDRESS_COLE_BAD = {
     cc.LGL_STATE: 'VA',
     cc.LGL_POSTAL_CODE: '22740',
     cc.LGL_EMAIL_ADDRESS: 'KatCinVA@gmail.com'
+}
+
+ADDRESS_ALBANO = {
+    cc.LGL_ADDRESS_LINE_1: '18 Costa Circle',
+    cc.LGL_ADDRESS_LINE_2: '',
+    cc.LGL_ADDRESS_LINE_3: '',
+    cc.LGL_CITY: 'Framingham',
+    cc.LGL_STATE: 'MA',
+    cc.LGL_POSTAL_CODE: '01701-3476',
+    cc.LGL_EMAIL_ADDRESS: 'j77albano@gmail.com'
+}
+
+ADDRESS_ALBANO_BAD = {
+    cc.LGL_ADDRESS_LINE_1: '20 Costa Circle',
+    cc.LGL_ADDRESS_LINE_2: '',
+    cc.LGL_ADDRESS_LINE_3: '',
+    cc.LGL_CITY: 'Farmingham',
+    cc.LGL_STATE: 'MA',
+    cc.LGL_POSTAL_CODE: '01701',
+    cc.LGL_EMAIL_ADDRESS: 'j77albano@gmail.com'
 }

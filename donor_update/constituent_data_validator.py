@@ -38,11 +38,48 @@ log = logging.getLogger()
 #
 class ConstituentDataValidator:
 
+    variance_labels = 'LGL_ID,LGL_name,LGL_email,LGL_address,input_name,input_email,input_address,varying_fields\n'
+    # variance_labels = 'LGL_ID,LGL_street,LGL_city,LGL_state,LGL_postal_code,LGL_email,input_address_1,' +\
+    #                           'input_address_2,input_address_3,input_city,input_state,input_postal_code,' +\
+    #                           'input_email,varying_fields\n'
+
     def __init__(self):
         # These class variable save the last constituent data so that multiple calls
         # for the same data don't have to be made.
         self._constituent_id = None
         self._constituent_data = {}
+
+    # This method will validate name data.
+    #
+    # Args -
+    #   constituent_id - the LGL ID of the constituent whose address is being validated
+    #   first_name - the first name of the client
+    #   last_name - the last name of the client
+    #   variance_file - the name of the variance file
+    #
+    # Returns - true if name validated, false if there was an error
+    # Side Effects - a file is created or updated containing any variances that are found
+    def validate_name_data(self, constituent_id, first_name, last_name, variance_file):
+        log.debug('Entering with ID {}, first name "{}", last name "{}"'.
+                  format(constituent_id, str(first_name), str(last_name)))
+        variance = []
+        lgl_data = self._get_constituent_data(constituent_id=constituent_id)
+        if lgl_data[cc.LGL_API_FIRST_NAME] != first_name:
+            variance.append('first name')
+        if lgl_data[cc.LGL_API_LAST_NAME] != last_name:
+            variance.append('last name')
+        if variance:
+            error_info = {
+                'lgl_id': lgl_data['id'],
+                'lgl_first_name': lgl_data[cc.LGL_API_FIRST_NAME],
+                'lgl_last_name': lgl_data[cc.LGL_API_LAST_NAME],
+                'input_first_name': first_name,
+                'input_last_name': last_name,
+                'varying_fields': '"' + ', '.join(variance) + '"'
+            }
+            self._log_bad_names(error_info=error_info, variance_file=variance_file)
+            return False
+        return True
 
     # This method will validate that the street address read from an input donor file (such as Stripe) matches
     # the address in LGL.  Note that it validates a single address.  The calling method is expected to loop
@@ -55,7 +92,7 @@ class ConstituentDataValidator:
     #   Address lines 2 and 3 may be None.  All other keys should have a value.
     #
     # Returns - true if address validated, false if there was an error
-    # Side Effects - a file is created containing any variances that are found
+    # Side Effects - a file is created or updated containing any variances that are found
     def validate_address_data(self, constituent_id, input_address, variance_file):
         log.debug('Entering with id: {}, input_address: {}, variance file: {}'.
                   format(constituent_id, input_address.__repr__(), variance_file))
@@ -215,6 +252,29 @@ class ConstituentDataValidator:
             variance.append('Email address')
         return variance
 
+    # This method will take a full name and split it into a first and last name.  If there is only one name,
+    # it is returned in the first name.
+    #
+    # Args -
+    #   full_name - the full name of the person separated by spaces.
+    #
+    # Returns - an array in the form (first_name, last_name)
+    #TODO: Make names with "and" work properly.  It needs to handle:
+    #      <fn> <ln> and <fn> <ln> as well as <fn> and <fn> <ln>
+    #      There may also be middle names.
+    #      Since the presence of "and" implies multiple names, callers will have to handle multiple names returned.
+    def _normalize_full_name(self, full_name):
+        log.debug('Entering with name "{}"'.format(full_name))
+        full_name = full_name.replace('.', '')
+        full_name = full_name.lower()
+        noise_words = [' and ', ' or ', '&', '.', 'jr', 'sr', ' i', ' ii', ' iii']
+        for word in noise_words:
+            full_name.replace(word, ' ')
+        (first_name, middle_name, last_name) = ' '.split(full_name.title())
+        if middle_name and not last_name:
+            last_name = middle_name
+        return first_name, last_name
+
     # This private method will make a call to get constituent detail data from LGL.  If the data
     # has already been retrieved, then it simply returns what it already knows.
     #
@@ -246,30 +306,75 @@ class ConstituentDataValidator:
         variance_file_exists = os.path.exists(variance_file)
         output_file = open(variance_file, 'a')
         if not variance_file_exists or (os.path.getsize(variance_file) == 0):
-            output_file.write('LGL_ID,LGL_street,LGL_city,LGL_state,LGL_postal_code,LGL_email,input_address_1,' +
-                              'input_address_2,input_address_3,input_city,input_state,input_postal_code,'
-                              'input_email,varying_fields\n')
+            output_file.write(self.variance_labels)
         line = str(error_info['lgl_id']) + ',' + \
-            error_info['lgl_address'][cc.LGL_API_STREET] + ',' + \
-            error_info['lgl_address'][cc.LGL_API_CITY] + ',' + \
-            error_info['lgl_address'][cc.LGL_API_STATE] + ',' + \
-            str(error_info['lgl_address'][cc.LGL_API_POSTAL_CODE]) + ',' + \
+            ',' + \
             error_info['lgl_email'] + ',' + \
-            error_info['input_address'][cc.LGL_ADDRESS_LINE_1] + ',' + \
-            error_info['input_address'][cc.LGL_ADDRESS_LINE_2] + ',' + \
-            error_info['input_address'][cc.LGL_ADDRESS_LINE_3] + ',' + \
-            error_info['input_address'][cc.LGL_CITY] + ',' + \
-            error_info['input_address'][cc.LGL_STATE] + ',' + \
-            str(error_info['input_address'][cc.LGL_POSTAL_CODE]) + ',' + \
+            '"' + error_info['lgl_address'][cc.LGL_API_STREET] + ' ' + \
+            error_info['lgl_address'][cc.LGL_API_CITY] + ', ' + \
+            error_info['lgl_address'][cc.LGL_API_STATE] + ' ' + \
+            str(error_info['lgl_address'][cc.LGL_API_POSTAL_CODE]) + '",' + \
+            ',' + \
             error_info['input_email'] + ',' + \
+            '"' + error_info['input_address'][cc.LGL_ADDRESS_LINE_1] + ' ' + \
+            error_info['input_address'][cc.LGL_ADDRESS_LINE_2] + ' ' + \
+            error_info['input_address'][cc.LGL_ADDRESS_LINE_3] + ' ' + \
+            error_info['input_address'][cc.LGL_CITY] + ', ' + \
+            error_info['input_address'][cc.LGL_STATE] + ' ' + \
+            str(error_info['input_address'][cc.LGL_POSTAL_CODE]) + '",' + \
             error_info['varying_fields'] + '\n'
         log.debug(line)
         output_file.write(line)
         output_file.close()
 
-    # 'lgl_email': '"' + ', '.join(lgl_emails) + '"',
-    # 'input_address': input_address,
-    # 'input_email': formatted_input_address[cc.LGL_API_EMAIL],
+    # def _log_bad_addresses(self, error_info, variance_file):
+    #     log.debug('Entering')
+    #     variance_file_exists = os.path.exists(variance_file)
+    #     output_file = open(variance_file, 'a')
+    #     if not variance_file_exists or (os.path.getsize(variance_file) == 0):
+    #         output_file.write('LGL_ID,LGL_street,LGL_city,LGL_state,LGL_postal_code,LGL_email,input_address_1,' +
+    #                           'input_address_2,input_address_3,input_city,input_state,input_postal_code,'
+    #                           'input_email,varying_fields\n')
+    #     line = str(error_info['lgl_id']) + ',' + \
+    #         error_info['lgl_address'][cc.LGL_API_STREET] + ',' + \
+    #         error_info['lgl_address'][cc.LGL_API_CITY] + ',' + \
+    #         error_info['lgl_address'][cc.LGL_API_STATE] + ',' + \
+    #         str(error_info['lgl_address'][cc.LGL_API_POSTAL_CODE]) + ',' + \
+    #         error_info['lgl_email'] + ',' + \
+    #         error_info['input_address'][cc.LGL_ADDRESS_LINE_1] + ',' + \
+    #         error_info['input_address'][cc.LGL_ADDRESS_LINE_2] + ',' + \
+    #         error_info['input_address'][cc.LGL_ADDRESS_LINE_3] + ',' + \
+    #         error_info['input_address'][cc.LGL_CITY] + ',' + \
+    #         error_info['input_address'][cc.LGL_STATE] + ',' + \
+    #         str(error_info['input_address'][cc.LGL_POSTAL_CODE]) + ',' + \
+    #         error_info['input_email'] + ',' + \
+    #         error_info['varying_fields'] + '\n'
+    #     log.debug(line)
+    #     output_file.write(line)
+    #     output_file.close()
+
+    # This private method will write names in the input file that don't match the names in LGL
+    # to a variance file.
+    #
+    # Args -
+    #   error_info - a dict of bad names in the form:
+    #       {'lgl_id': <lgl_id>, 'lgl name data': <lgl name data>, 'input file name data': <input file name data>}
+    #   variance_file - file to which to write the data
+    def _log_bad_names(self, error_info, variance_file):
+        log.debug('Entering')
+        variance_file_exists = os.path.exists(variance_file)
+        output_file = open(variance_file, 'a')
+        if not variance_file_exists or (os.path.getsize(variance_file) == 0):
+            output_file.write(self.variance_labels)
+        line = str(error_info['lgl_id']) + ',' + \
+            error_info['lgl_first_name'] + ' ' + \
+            error_info['lgl_last_name'] + ',,,' + \
+            error_info['input_first_name'] + ' ' + \
+            error_info['input_last_name'] + ',,,' + \
+            error_info['varying_fields'] + '\n'
+        log.debug(line)
+        output_file.write(line)
+        output_file.close()
 
     # This private method will return a dict with the address keys initialized to nothing.
     def _initialize_output_address_data(self):
@@ -282,6 +387,7 @@ class ConstituentDataValidator:
             cc.LGL_API_EMAIL: ''
         }
         return output_address
+
 
 # Tests
 
@@ -327,25 +433,71 @@ def run_reformat_address_test():
 
 def run_validate_address_data_test():
     log.debug('\n-----')
+    variance_test_file = 'variance_test_file.csv'
     cdv = ConstituentDataValidator()
     cdv.validate_address_data(constituent_id=sample.ID_LIMERI,
                               input_address=sample.ADDRESS_LIMERI,
-                              variance_file='variance_test_file.csv')
+                              variance_file=variance_test_file)
     cdv.validate_address_data(constituent_id=sample.ID_LIMERI,
                               input_address=sample.ADDRESS_LIMERI_BAD,
-                              variance_file='variance_test_file.csv')
+                              variance_file=variance_test_file)
     cdv.validate_address_data(constituent_id=sample.ID_COLE,
                               input_address=sample.ADDRESS_COLE,
-                              variance_file='variance_test_file.csv')
+                              variance_file=variance_test_file)
     cdv.validate_address_data(constituent_id=sample.ID_COLE,
                               input_address=sample.ADDRESS_COLE_BAD,
-                              variance_file='variance_test_file.csv')
+                              variance_file=variance_test_file)
     cdv.validate_address_data(constituent_id=sample.ID_ALI,
                               input_address=sample.ADDRESS_ALI_1,
-                              variance_file='variance_test_file.csv')
+                              variance_file=variance_test_file)
     cdv.validate_address_data(constituent_id=sample.ID_ALI,
                               input_address=sample.ADDRESS_ALI_2,
-                              variance_file='variance_test_file.csv')
+                              variance_file=variance_test_file)
+
+def run_name_test():
+    log.debug('\n-----')
+    variance_test_file = 'variance_test_file.csv'
+    if os.path.exists(variance_test_file):
+        os.remove(variance_test_file)
+    cdv = ConstituentDataValidator()
+    cdv.validate_name_data(constituent_id=sample.ID_LIMERI,
+                           first_name=sample.NAME_LIMERI[cc.LGL_API_FIRST_NAME],
+                           last_name=sample.NAME_LIMERI[cc.LGL_API_LAST_NAME],
+                           variance_file=variance_test_file)
+    cdv.validate_name_data(constituent_id=sample.ID_LIMERI,
+                           first_name=sample.NAME_LIMERI_BAD[cc.LGL_API_FIRST_NAME],
+                           last_name=sample.NAME_LIMERI_BAD[cc.LGL_API_LAST_NAME],
+                           variance_file=variance_test_file)
+    cdv.validate_name_data(constituent_id=sample.ID_ALBANO,
+                           first_name=sample.NAME_ALBANO[cc.LGL_API_FIRST_NAME],
+                           last_name=sample.NAME_ALBANO[cc.LGL_API_LAST_NAME],
+                           variance_file=variance_test_file)
+    cdv.validate_name_data(constituent_id=sample.ID_ALBANO,
+                           first_name=sample.NAME_ALBANO_BAD[cc.LGL_API_FIRST_NAME],
+                           last_name=sample.NAME_ALBANO_BAD[cc.LGL_API_LAST_NAME],
+                           variance_file=variance_test_file)
+
+# Test both name and address data.
+def run_validate_data_test():
+    log.debug('\n-----')
+    variance_test_file = 'variance_test_file.csv'
+    if os.path.exists(variance_test_file):
+        os.remove(variance_test_file)
+    cdv = ConstituentDataValidator()
+    cdv.validate_name_data(constituent_id=sample.ID_LIMERI,
+                           first_name=sample.NAME_LIMERI_BAD[cc.LGL_API_FIRST_NAME],
+                           last_name=sample.NAME_LIMERI_BAD[cc.LGL_API_LAST_NAME],
+                           variance_file=variance_test_file)
+    cdv.validate_name_data(constituent_id=sample.ID_ALBANO,
+                           first_name=sample.NAME_ALBANO_BAD[cc.LGL_API_FIRST_NAME],
+                           last_name=sample.NAME_ALBANO_BAD[cc.LGL_API_LAST_NAME],
+                           variance_file=variance_test_file)
+    cdv.validate_address_data(constituent_id=sample.ID_LIMERI,
+                              input_address=sample.ADDRESS_LIMERI_BAD,
+                              variance_file=variance_test_file)
+    cdv.validate_address_data(constituent_id=sample.ID_COLE,
+                              input_address=sample.ADDRESS_COLE_BAD,
+                              variance_file=variance_test_file)
 
 
 if __name__ == '__main__':
@@ -355,7 +507,9 @@ if __name__ == '__main__':
     log.addHandler(console_handler)
     log.setLevel(logging.DEBUG)
 
-    run_normalize_street_name_test()
-    run_get_constituent_data_test()
-    run_reformat_address_test()
-    run_validate_address_data_test()
+    # run_normalize_street_name_test()
+    # run_get_constituent_data_test()
+    # run_reformat_address_test()
+    # run_validate_address_data_test()
+    # run_name_test()
+    run_validate_data_test()

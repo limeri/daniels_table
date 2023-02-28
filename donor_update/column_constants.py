@@ -7,6 +7,9 @@ EMPTY_CELL = 'nan'
 GENERAL = 'General'
 
 # LGL API fields -- these are key names that you get back when you make an API call to get client details.
+LGL_API_CONSTITUENT_TYPE = 'constituent_contact_type_name'
+LGL_API_FIRST_NAME = 'first_name'
+LGL_API_LAST_NAME = 'last_name'
 LGL_API_ADDRESS = 'street_addresses'
 LGL_API_STREET = 'street'
 LGL_API_CITY = 'city'
