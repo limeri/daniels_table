@@ -42,7 +42,7 @@ class DonorGui:
     def main_form(self, version):
         today = self._get_string_date()
         self.OUTPUT_FILE_INPUT.DefaultText = 'lgl_' + today + '.csv'
-        self.VARIANCE_FILE_INPUT.DefaultText = 'address_variance_' + today + '.csv'
+        self.VARIANCE_FILE_INPUT.DefaultText = 'variance_' + today + '.csv'
 
         layout = [[self.INPUT_FILE_TEXT, self.INPUT_FILE_BROWSER, self.DISPLAY_FILE_TEXT],
                   [self.INPUT_FILE_HELP_TEXT],
