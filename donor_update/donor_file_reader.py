@@ -41,8 +41,8 @@ class DonorFileReader:
         self.variance_file = ''
         self.campaigns = {}
         self._get_campaigns()
-        self._check_addresses = True
-        self._check_names = True
+        # self._check_addresses = True
+        self._verify_names = False
 
     @property
     def input_data(self):
@@ -54,21 +54,21 @@ class DonorFileReader:
         if self.input_data:
             self.initialize_donor_data()
 
+    # @property
+    # def check_addresses(self):
+    #     return self._check_addresses
+    #
+    # @check_addresses.setter
+    # def check_addresses(self, yes_or_no: bool):
+    #     self._check_addresses = yes_or_no
+
     @property
-    def check_addresses(self):
-        return self._check_addresses
+    def verify_names(self):
+        return self._verify_names
 
-    @check_addresses.setter
-    def check_addresses(self, yes_or_no: bool):
-        self._check_addresses = yes_or_no
-
-    @property
-    def check_names(self):
-        return self._check_addresses
-
-    @check_names.setter
-    def check_names(self, yes_or_no: bool):
-        self._check_names = yes_or_no
+    @verify_names.setter
+    def verify_names(self, yes_or_no: bool):
+        self._verify_names = yes_or_no
 
     # This method makes a default initialization of self.donor_data.
     #
@@ -128,14 +128,18 @@ class DonorFileReader:
         output_data[cc.LGL_GIFT_CATEGORY] = dict.fromkeys(indexes, 'Donation')
         return output_data
 
-    # This method will call the address verification method for all the donors in the input files.
+    # This method will call the donor verification method or addresses, names, and any other info being verified
+    # for all the donors in the input files.
     #
     # Args -
     #   donor_info - the output from map_fields (from all input files)
     #
+    # Properties -
+    #   Uses the verify_names property to determine if names will be verified.
+    #
     # Returns - none
     # Side effects - see the ConstituentDataValidator class
-    def check_address(self, donor_info):
+    def verify_donor_info(self, donor_info):
         log.debug('Entering')
         if not self.variance_file:
             log.info(dd.save('No variance file was given, so no variance checking will be done.'))
@@ -149,10 +153,7 @@ class DonorFileReader:
         postal_code = self._get_value(key=cc.LGL_POSTAL_CODE_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
         email = self._get_value(key=cc.LGL_EMAIL_ADDRESS_DNI, donor_info=donor_info, key_list=lgl_ids.keys())
         variance_count = 0
-        # If more than 100 names, sleep each iteration cuz LGL doesn't allow more than 200 transactions every 5 mins.
-        sleep_time = 0
-        if len(lgl_ids.keys()) > 200:
-            sleep_time = 2
+        cdv = cdv_module.ConstituentDataValidator()
         for index in lgl_ids.keys():
             if not lgl_ids[index]:  # Skip this row if no LGL ID is found.
                 continue
@@ -167,13 +168,18 @@ class DonorFileReader:
                 input_data[cc.LGL_EMAIL_ADDRESS] = ''  # No email was found.
             else:
                 input_data[cc.LGL_EMAIL_ADDRESS] = email[index].strip()
-            cdv = cdv_module.ConstituentDataValidator()
             success = cdv.validate_address_data(constituent_id=lgl_ids[index],
                                                 input_address=input_data,
                                                 variance_file=self.variance_file)
+            if self.verify_names:
+                success_name = cdv.validate_name_data(constituent_id=lgl_ids[index],
+                                                      first_name=str(donor_info[cc.LGL_FIRST_NAME_DNI][index]),
+                                                      last_name=str(donor_info[cc.LGL_LAST_NAME_DNI][index]),
+                                                      variance_file=self.variance_file)
+                success = success and success_name
             if not success:
                 variance_count += 1
-            time.sleep(sleep_time)
+        cdv.log_bad_data(variance_file=self.variance_file)
         if variance_count > 0:
             msg = 'There were {} variance(s) in the addresses.  '.format(variance_count)
             msg += 'Please look at the file "{}" for the variances.'.format(self.variance_file)

@@ -6,7 +6,7 @@ import logging
 import time
 
 CALL_THRESHOLD = 299
-WAIT_PERIOD = 300
+WAIT_PERIOD = 305
 
 log = logging.getLogger()
 
@@ -54,9 +54,10 @@ class LglCallTracker:
             elapsed = self.elapsed_time()
             if elapsed < WAIT_PERIOD:
                 wait_time = WAIT_PERIOD - elapsed
-                log.info('Too many calls to LGL have been made in the last {} seconds.  This will '.format(WAIT_PERIOD)
-                         + 'exceed the number of calls allowed by LGL in this time and will cause an error.  '
-                         + 'There will be a {} second delay until the program resumes.'.format(wait_time))
+                log.info('More than {} calls to LGL have been made in the last {} '.format(CALL_THRESHOLD, elapsed)
+                         + 'seconds.  This will  exceed the number of calls allowed by LGL in {} '.format(WAIT_PERIOD)
+                         + 'seconds and will cause an error.  There will be a {} second delay '.format(wait_time)
+                         + 'until the program resumes to avoid this error.')
                 time.sleep(wait_time)
                 self.clear_call_count()
                 log.info('The program is resuming now.')
