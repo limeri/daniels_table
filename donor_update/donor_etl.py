@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "5.0"
+VERSION = "5.1"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -59,6 +59,8 @@ VERSION = "5.0"
 # 4.10 - New formats for Benevity and YourCause created
 # 4.11 - Issue 19 (correct message sorting), Issue 20: QB processing error if description field is empty
 # 5.0 - Check the names in Strip against LGL
+# 5.1 - 5.1 - issue 8: Read Stripe data from a CSV file as well as an XLSX file.
+#             Also, clean up some of the code from comparing first and last names.
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
