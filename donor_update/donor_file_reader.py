@@ -51,8 +51,6 @@ class DonorFileReader:
     @input_data.setter
     def input_data(self, file_data):
         self._input_data = file_data
-        if self.input_data:
-            self.initialize_donor_data()
 
     # @property
     # def check_addresses(self):
@@ -169,13 +167,11 @@ class DonorFileReader:
             else:
                 input_data[cc.LGL_EMAIL_ADDRESS] = email[index].strip()
             success = cdv.validate_address_data(constituent_id=lgl_ids[index],
-                                                input_address=input_data,
-                                                variance_file=self.variance_file)
+                                                input_address=input_data)
             if self.verify_names:
                 success_name = cdv.validate_name_data(constituent_id=lgl_ids[index],
                                                       first_name=str(donor_info[cc.LGL_FIRST_NAME_DNI][index]),
-                                                      last_name=str(donor_info[cc.LGL_LAST_NAME_DNI][index]),
-                                                      variance_file=self.variance_file)
+                                                      last_name=str(donor_info[cc.LGL_LAST_NAME_DNI][index]))
                 success = success and success_name
             if not success:
                 variance_count += 1
