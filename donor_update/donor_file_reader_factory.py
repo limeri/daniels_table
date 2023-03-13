@@ -14,6 +14,7 @@ import display_data
 import donor_file_reader_benevity as benevity_reader
 import donor_file_reader_fidelity as fidelity_reader
 import donor_file_reader_stripe as stripe_reader
+import donor_file_reader_stripe_csv as stripe_reader_csv
 import donor_file_reader_quickbooks as qb_reader
 import donor_file_reader_yourcause as yc_reader
 
@@ -87,9 +88,12 @@ def get_file_reader(file_path):
             debug_key_compare(input_keys=input_keys, map_keys=cc.QB_MAP.keys())
     elif type(input_data) == list:
         benevity_keys = input_data[cc.BEN_LABEL_ROW]
+        stripe_keys = input_data[cc.STRIPE_LABEL_ROW]
         yc_keys = input_data[cc.YC_LABEL_ROW]
         if set(benevity_keys) <= set(cc.BENEVITY_MAP.keys()):
             file_reader = benevity_reader.DonorFileReaderBenevity()
+        elif set(stripe_keys) <= set(cc.STRIPE_MAP.keys()):
+            file_reader = stripe_reader_csv.DonorFileReaderStripeCsv()
         elif set(yc_keys) <= set(cc.YC_MAP.keys()):
             file_reader = yc_reader.DonorFileReaderYourCause()
         else:
@@ -97,6 +101,8 @@ def get_file_reader(file_path):
             # keys to the input keys.
             log.debug('------------------------- Benevity Comparison')
             debug_key_compare(input_keys=benevity_keys, map_keys=cc.BENEVITY_MAP.keys())
+            log.debug('------------------------- Benevity Comparison')
+            debug_key_compare(input_keys=stripe_keys, map_keys=cc.STRIPE_MAP.keys())
             log.debug('------------------------- YourCause Comparison')
             debug_key_compare(input_keys=yc_keys, map_keys=cc.YC_MAP.keys())
     else:
@@ -108,6 +114,7 @@ def get_file_reader(file_path):
     if file_reader:
         file_reader.input_file = file_path
         file_reader.input_data = input_data
+        file_reader.initialize_donor_data()
     else:
         log.error(ml.error('The type of input file (Stripe, etc) for "{}" was not found.  '.format(file_path) +
                            'This data cannot be processed!  Please note that Fidelity, Stripe, and QB are expected ' +

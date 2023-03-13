@@ -106,6 +106,7 @@ BEN_TOTAL_DONATION_TO_BE_ACKNOWLEDGED = 'Total Donation to be Acknowledged'
 BEN_TRANSACTION_ID = 'Transaction ID'
 
 # Stripe input fields
+STRIPE_LABEL_ROW = 0  # This is the row that contains the labels if this is a CSV file.
 # Our friends at Stripe have modified some key names.  For instance, "seller_message" became "Seller Message".
 # Since we don't know if that will continue, we've added them as new names with an "_2" after them (SELLER_MESSAGE_2).
 # Unfortunately, this will mean some extra processing in the donor_file_reader_stripe module to discover the key that

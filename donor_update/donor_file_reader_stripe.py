@@ -44,7 +44,6 @@ class DonorFileReaderStripe(donor_file_reader.DonorFileReader):
     # Side Effects: self.donor_data is populated
     def initialize_donor_data(self):
         log.debug('Entering')
-        self.donor_data = {}
         self._copy_input_keys_to_donor_keys()
 
         # Now loop through the rest of the rows and decide what data to keep.  For the data we do keep,
