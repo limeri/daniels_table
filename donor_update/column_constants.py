@@ -199,6 +199,13 @@ STRIPE_USER_TYPE_META = 'user_type (metadata)'
 STRIPE_WHY = 'why_did_you_choose_to_put_your_donat... (metadata)'
 STRIPE_ANON = 'anonymous_to_public (metadata)'
 STRIPE_TAXES_ON_FEE = 'Taxes On Fee'
+STRIPE_EVENT_ADDITIONAL_DONATION = 'event_additional_donation (metadata)'
+STRIPE_DATE_NIGHT_IN = 'date_night_in (metadata)'
+STRIPE_EVENT_SLUG = 'event_slug (metadata)'
+STRIPE_EVENT_NAME = 'event_name (metadata)'
+STRIPE_UTM_SOURCE = 'utm_source (metadata)'
+STRIPE_RELAXING_NIGHT_IN = 'relaxing_night_in (metadata)'
+STRIPE_CHAMPAGNE_TICKET = 'champagne_ticket (metadata)'
 # These are messages that could appear in the STRIPE description field:
 STRIPE_DESC_GIVE_LIVELY = 'Give Lively / Smart Donations'
 STRIPE_DESC_MEMORY = 'In Memory of'
@@ -414,6 +421,13 @@ STRIPE_MAP = {
     STRIPE_WHY: IGNORE_FIELD,
     STRIPE_ANON: IGNORE_FIELD,
     STRIPE_TAXES_ON_FEE: IGNORE_FIELD,
+    STRIPE_EVENT_ADDITIONAL_DONATION: IGNORE_FIELD,
+    STRIPE_DATE_NIGHT_IN: IGNORE_FIELD,
+    STRIPE_EVENT_SLUG: IGNORE_FIELD,
+    STRIPE_EVENT_NAME: IGNORE_FIELD,
+    STRIPE_UTM_SOURCE: IGNORE_FIELD,
+    STRIPE_RELAXING_NIGHT_IN: IGNORE_FIELD,
+    STRIPE_CHAMPAGNE_TICKET: IGNORE_FIELD,
 }
 
 QB_MAP = {

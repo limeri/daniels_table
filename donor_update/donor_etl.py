@@ -62,6 +62,7 @@ VERSION = "5.2"
 # 5.1 - Issue 8: Read Stripe data from a CSV file as well as an XLSX file.
 #             Also, clean up some of the code from comparing first and last names.
 # 5.2 - Issue 21: Add new Stripe column "Taxes on Fee".
+# 5.3 - Issue 22: Stripe added 5 new metadata columns.
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
