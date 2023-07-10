@@ -206,6 +206,9 @@ STRIPE_EVENT_NAME = 'event_name (metadata)'
 STRIPE_UTM_SOURCE = 'utm_source (metadata)'
 STRIPE_RELAXING_NIGHT_IN = 'relaxing_night_in (metadata)'
 STRIPE_CHAMPAGNE_TICKET = 'champagne_ticket (metadata)'
+STRIPE_PHONE_NUMBER_META = 'phone_number (metadata)'
+STRIPE_COMPANY_ORG = 'company/organization_name (metadata)'
+STRIPE_MEAL_LOBSTER = 'meal_#1:__lobster_bisque,_salmon_wit... (metadata)'
 # These are messages that could appear in the STRIPE description field:
 STRIPE_DESC_GIVE_LIVELY = 'Give Lively / Smart Donations'
 STRIPE_DESC_MEMORY = 'In Memory of'
@@ -428,6 +431,9 @@ STRIPE_MAP = {
     STRIPE_UTM_SOURCE: IGNORE_FIELD,
     STRIPE_RELAXING_NIGHT_IN: IGNORE_FIELD,
     STRIPE_CHAMPAGNE_TICKET: IGNORE_FIELD,
+    STRIPE_PHONE_NUMBER_META: IGNORE_FIELD,
+    STRIPE_COMPANY_ORG: IGNORE_FIELD,
+    STRIPE_MEAL_LOBSTER: IGNORE_FIELD,
 }
 
 QB_MAP = {

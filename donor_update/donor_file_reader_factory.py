@@ -75,7 +75,8 @@ def get_file_reader(file_path):
             file_reader = fidelity_reader.DonorFileReaderFidelity()
         elif set(input_keys) <= set(cc.STRIPE_MAP.keys()):
             file_reader = stripe_reader.DonorFileReaderStripe()
-        elif "Daniel's Table dba The Foodie Cafe" in input_keys:
+        # elif "Daniel's Table dba The Foodie Cafe" in input_keys:
+        elif "Daniel's Table" in list(input_keys)[0]:
             file_reader = qb_reader.DonorFileReaderQuickbooks()
         else:
             # If we get here, then we didn't match any input.  For diagnostic purposes, compare each of the map
