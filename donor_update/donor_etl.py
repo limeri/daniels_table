@@ -14,7 +14,7 @@ import donor_gui
 import donor_file_reader_factory
 import sample_data as sample
 
-VERSION = "5.2"
+VERSION = "5.4"
 # Version History:
 # 1 - initial release
 # 1.1 - Bug fix where donor_etl.append_data did not properly append data that was in the input array, but not the
@@ -63,6 +63,7 @@ VERSION = "5.2"
 #             Also, clean up some of the code from comparing first and last names.
 # 5.2 - Issue 21: Add new Stripe column "Taxes on Fee".
 # 5.3 - Issue 22: Stripe added 5 new metadata columns.
+# 5.4 - Issues 23 & 24: Correct QB title mgmt and new Stripe columns
 
 # The log object needs to be created here for use in this module.  The setup_logger function can configure it later.
 log = logging.getLogger()
